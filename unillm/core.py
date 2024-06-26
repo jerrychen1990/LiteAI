@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 from loguru import logger
 from typing import Any, Generator, List, Optional
 
+from unillm.utils import truncate_dict_strings
+
 
 # class Role(str, Enum):
 #     system = "system"
@@ -14,7 +16,7 @@ from typing import Any, Generator, List, Optional
 class Message(BaseModel):
     role: str = Field(description="The role of the sender in the conversation.", pattern="^(system|user|assistant)$", example="user")
     content: str = Field(description="The content of the message.")
-    image: Optional[str] = Field(description="The image attached to the message. base64", default=None)
+    image: Optional[str] = Field(description="local path of image", default=None)
 
 
 class Usage(BaseModel):
@@ -72,7 +74,8 @@ class BaseProvider:
     def complete(self, model, messages: List[Message], stream: bool, **kwargs) -> ModelResponse:
 
         messages, kwargs = self.pre_process(messages, **kwargs)
-        logger.debug(f"calling {self.key} api with {messages=}, {kwargs=}")
+        show_message = truncate_dict_strings(messages, 50)
+        logger.debug(f"calling {self.key} api with messages={show_message}, {kwargs=}")
         response = self._inner_complete_(model, messages, stream=stream, **kwargs)
         if stream:
             return self.post_process_stream(response)

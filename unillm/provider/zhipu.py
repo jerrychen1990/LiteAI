@@ -14,6 +14,8 @@ from loguru import logger
 from unillm.core import BaseProvider, ModelResponse, Message, Usage
 from zhipuai import ZhipuAI
 
+from unillm.utils import image2base64
+
 
 class ZhipuProvider(BaseProvider):
     key: str = "zhipu"
@@ -27,7 +29,15 @@ class ZhipuProvider(BaseProvider):
         kwargs.get("temperature") == 0.
         kwargs["temperature"] = 0.1
         kwargs["do_sample"] = False
-        return super().pre_process(messages, **kwargs)
+        messages, kwargs = super().pre_process(messages, **kwargs)
+        for message in messages:
+            # logger.debug(f"{message=}")
+            if message.get("image"):
+                base64 = image2base64(message["image"])
+                message["content"] = [dict(type="text", text=message["content"]),
+                                      dict(type="image_url", image_url=dict(url=base64))]
+                del message["image"]
+        return messages, kwargs
 
     def _inner_complete_(self, model, messages: List[dict], **kwargs) -> Any:
         response = self.client.chat.completions.create(
