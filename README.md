@@ -4,5 +4,5 @@
 
 | 厂商     | chat | 流式chat | Image输入 | Image输出 | Embedding | Agent |
 | -------- | ---- | -------- | --------- | --------- | --------- | ----- |
-| [ZhipuAI](https://open.bigmodel.cn/dev/api#glm-4) | ✅   |          |           |           |           |       |
+| [ZhipuAI](https://open.bigmodel.cn/dev/api#glm-4) | ✅   |    ✅       |    ✅        |           |           |       |
 |          |      |          |           |           |           |       |
