@@ -8,8 +8,8 @@
 '''
 
 
-from unillm.core import *
-from unillm.provider.api import get_provider
+from liteai.core import *
+from liteai.provider.api import get_provider
 from typing import List
 
 

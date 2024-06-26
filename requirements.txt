@@ -1,8 +1,17 @@
+# 基础包
 loguru
+pillow
+requests
+
+# llm api
 openai
-litellm
+
 zhipuai
 dashscope
+
+#聚合包
+litellm
+
 
 
 

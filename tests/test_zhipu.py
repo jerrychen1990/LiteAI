@@ -1,8 +1,8 @@
 import unittest
 
-from unillm.core import Message
-from unillm.api import chat
-from unillm.utils import set_logger, show_response
+from liteai.core import Message
+from liteai.api import chat
+from liteai.utils import set_logger, show_response
 from loguru import logger
 
 

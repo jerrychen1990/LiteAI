@@ -7,7 +7,7 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
-from unillm.utils import set_logger
+from liteai.utils import set_logger
 
 
 set_logger(__name__)

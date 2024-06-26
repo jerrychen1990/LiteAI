@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from loguru import logger
 from typing import Any, Generator, List, Optional
 
-from unillm.utils import truncate_dict_strings
+from liteai.utils import truncate_dict_strings
 
 
 # class Role(str, Enum):

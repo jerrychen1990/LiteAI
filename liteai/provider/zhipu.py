@@ -11,10 +11,10 @@ from typing import Any, List, Tuple
 
 from loguru import logger
 
-from unillm.core import BaseProvider, ModelResponse, Message, Usage
+from liteai.core import BaseProvider, ModelResponse, Message, Usage
 from zhipuai import ZhipuAI
 
-from unillm.utils import image2base64
+from liteai.utils import image2base64
 
 
 class ZhipuProvider(BaseProvider):

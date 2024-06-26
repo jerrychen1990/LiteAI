@@ -8,8 +8,8 @@
 '''
 
 from typing import List
-from unillm.core import BaseProvider
-from unillm.provider.zhipu import ZhipuProvider
+from liteai.core import BaseProvider
+from liteai.provider.zhipu import ZhipuProvider
 from loguru import logger
 
 _ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider]
