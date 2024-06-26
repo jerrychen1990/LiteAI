@@ -8,14 +8,18 @@
 '''
 import os
 from typing import Any, List, Tuple
-from ..core import BaseProvider, ModelResponse, Message
+
+from loguru import logger
+
+from unillm.core import BaseProvider, ModelResponse, Message, Usage
 from zhipuai import ZhipuAI
 
 
 class ZhipuProvider(BaseProvider):
     key: str = "zhipu"
+    allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str = None):
         self.api_key = api_key or os.environ["ZHIPU_API_KEY"]
         self.client = ZhipuAI(api_key=api_key)
 
@@ -34,5 +38,42 @@ class ZhipuProvider(BaseProvider):
         return response
 
     def post_process(self, response) -> ModelResponse:
-        model_response = ModelResponse(**response.model_dump())
-        return model_response
+        content = response.choices[0].message.content
+        usage = Usage(**response.usage.model_dump())
+        return ModelResponse(content=content, usage=usage)
+
+    def post_process_stream(self, response) -> ModelResponse:
+        # for item in response:
+        #     logger.debug(f"{item=}")
+        #     # content = item.choices[0].message.content
+
+        def _gen():
+            acc = []
+            for chunk in response:
+                # logger.debug(f"{chunk=}")
+                choices = chunk.choices
+                if choices:
+                    choice = choices[0]
+                    if choice.delta.content:
+                        delta_content = choice.delta.content
+                        # logger.info(f"{delta_content}")
+                        yield delta_content
+                        acc.append(delta_content)
+                _finish_reason = choice.finish_reason
+                if _finish_reason:
+                    if _finish_reason == "sensitive":
+                        logger.warning(f"zhipu api finish with reason {_finish_reason}")
+                        msg = "系统检测到输入或生成内容可能包含不安全或敏感内容，请您避免输入易产生敏感内容的提示语，感谢您的配合。"
+                        acc.append(msg)
+                        yield msg
+
+            resp_msg = "".join(acc).strip()
+            logger.debug(f"model generate answer:{resp_msg}")
+        return ModelResponse(content=_gen())
+
+
+if __name__ == "__main__":
+    provider = ZhipuProvider()
+    messages = [Message(role="user", content="你好")]
+    resp = provider.complete(messages=messages, model="glm-3-turbo", stream=False)
+    print(resp.content)

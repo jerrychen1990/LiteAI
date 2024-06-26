@@ -1,15 +1,14 @@
 from abc import abstractmethod
-from enum import Enum
 from typing import Any, List, Optional, Tuple
-from litellm import ModelResponse, CustomStreamWrapper
 from pydantic import BaseModel, Field
 from loguru import logger
+from typing import Any, Generator, List, Optional
 
 
-class Role(str, Enum):
-    system = "system"
-    user = "user"
-    assistant = "assistant"
+# class Role(str, Enum):
+#     system = "system"
+#     user = "user"
+#     assistant = "assistant"
 
 
 class Message(BaseModel):
@@ -18,28 +17,63 @@ class Message(BaseModel):
     image: Optional[str] = Field(description="The image attached to the message. base64", default=None)
 
 
+class Usage(BaseModel):
+    prompt_tokens: int = Field(description="输入token数量", default=None)
+    completion_tokens: int = Field(description="输出token数量", default=None)
+    # total_tokens: int = Field(description="输入输出token数量总和", default=None)
+
+
+class ModelResponse(BaseModel):
+    content: Optional[str | Generator] = Field(description="模型的回复，字符串或者生成器", default=None)
+    image: Optional[str] = Field(description="图片URL", default=None)
+    # tool_calls: Optional[list[ToolCall]] = Field(description="工具调用列表", default=list())
+    usage: Optional[Usage] = Field(description="token使用情况", default=None)
+    # perf: Optional[Perf] = Field(description="性能指标", default=None)
+    details: Optional[dict] = Field(description="请求模型的细节信息", default=dict())
+
+
 class BaseProvider:
     key: str = None
+    allow_kwargs = None
 
     def pre_process(self, messages: List[Message], **kwargs) -> Tuple[List[dict], dict]:
+        new_kwargs = dict()
+        ignore_kwargs = dict()
+        # logger.debug(f"{self.allow_kwargs=}")
+        if self.allow_kwargs:
+            for k, v in kwargs.items():
+                if k in self.allow_kwargs:
+                    new_kwargs[k] = v
+                else:
+                    ignore_kwargs[k] = v
+        else:
+            new_kwargs = dict(**kwargs)
+
+        # logger.debug(f"{new_kwargs=}")
+        # logger.debug(f"{ignore_kwargs=}")
+        if ignore_kwargs:
+            logger.warning(f"ignoring {len(ignore_kwargs)} unknown kwargs: {ignore_kwargs}")
+
         messages = [message.model_dump(exclude_none=True) for message in messages]
-        return messages, kwargs
+        return messages, new_kwargs
 
+    @abstractmethod
     def post_process(self, response) -> ModelResponse:
-        return response
+        raise NotImplementedError
 
-    def post_process_stream(self, response) -> CustomStreamWrapper:
-        return response
+    @abstractmethod
+    def post_process_stream(self, response) -> ModelResponse:
+        raise NotImplementedError
 
     @abstractmethod
     def _inner_complete_(self, model, messages: List[dict], **kwargs) -> Any:
         raise NotImplementedError
 
-    def complete(self, model, messages: List[Message], stream: bool, **kwargs) -> ModelResponse | CustomStreamWrapper:
+    def complete(self, model, messages: List[Message], stream: bool, **kwargs) -> ModelResponse:
 
         messages, kwargs = self.pre_process(messages, **kwargs)
         logger.debug(f"calling {self.key} api with {messages=}, {kwargs=}")
-        response = self._inner_complete_(model, messages, **kwargs)
+        response = self._inner_complete_(model, messages, stream=stream, **kwargs)
         if stream:
             return self.post_process_stream(response)
         else:
