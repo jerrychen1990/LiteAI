@@ -10,9 +10,10 @@
 from typing import List
 from liteai.core import BaseProvider
 from liteai.provider.zhipu import ZhipuProvider
+from liteai.provider.qwen import QwenProvider
 from loguru import logger
 
-_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider]
+_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 
@@ -21,7 +22,9 @@ def get_provider(provider_name: str, model_name: str, **kwargs) -> BaseProvider:
         logger.debug("No provider specified, inferring from model name")
         model_name = model_name.lower()
         if "glm" in model_name:
-            provider_name = "zhipu"
+            provider_name = ZhipuProvider.key
+        if "qwen" in model_name:
+            provider_name = QwenProvider.key
 
     if provider_name not in _PROVIDER_MAP:
         raise ValueError(f"Unsupported provider: {provider_name}")

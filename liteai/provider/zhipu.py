@@ -6,7 +6,6 @@
 @Description  :   
 @Contact :   jerrychen1990@gmail.com
 '''
-import os
 from typing import Any, List, Tuple
 
 from loguru import logger
@@ -20,16 +19,23 @@ from liteai.utils import image2base64
 class ZhipuProvider(BaseProvider):
     key: str = "zhipu"
     allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
+    api_key_env = "ZHIPU_API_KEY"
 
     def __init__(self, api_key: str = None):
-        self.api_key = api_key or os.environ["ZHIPU_API_KEY"]
+        super().__init__(api_key=api_key)
         self.client = ZhipuAI(api_key=api_key)
 
-    def pre_process(self, messages: List[Message], **kwargs) -> Tuple[List[dict], dict]:
+    def _support_system(self, model: str):
+        model = model.lower()
+        if "glm-4" in model:
+            return True
+        return "chatglm3" in model or "glm-3" in model
+
+    def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
         kwargs.get("temperature") == 0.
         kwargs["temperature"] = 0.1
         kwargs["do_sample"] = False
-        messages, kwargs = super().pre_process(messages, **kwargs)
+        messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")
             if message.get("image"):
@@ -39,10 +45,11 @@ class ZhipuProvider(BaseProvider):
                 del message["image"]
         return messages, kwargs
 
-    def _inner_complete_(self, model, messages: List[dict], **kwargs) -> Any:
+    def _inner_complete_(self, model, messages: List[dict], stream: bool, ** kwargs) -> Any:
         response = self.client.chat.completions.create(
             model=model,
             messages=messages,
+            stream=stream,
             **kwargs
         )
         return response
