@@ -12,6 +12,9 @@ from liteai.core import BaseProvider
 from liteai.provider.zhipu import ZhipuProvider
 from liteai.provider.qwen import QwenProvider
 from loguru import logger
+from dotenv import load_dotenv
+load_dotenv()  # 默认会加载当前目录下的 .env 文件
+
 
 _ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}

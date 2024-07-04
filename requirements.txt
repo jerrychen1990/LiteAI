@@ -2,6 +2,7 @@
 loguru
 pillow
 requests
+python-dotenv
 
 # llm api
 openai

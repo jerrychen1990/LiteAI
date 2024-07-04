@@ -19,11 +19,11 @@ from liteai.utils import image2base64
 class ZhipuProvider(BaseProvider):
     key: str = "zhipu"
     allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
-    api_key_env = "ZHIPU_API_KEY"
+    api_key_env = "ZHIPUAI_API_KEY"
 
     def __init__(self, api_key: str = None):
         super().__init__(api_key=api_key)
-        self.client = ZhipuAI(api_key=api_key)
+        self.client = ZhipuAI(api_key=self.api_key)
 
     def _support_system(self, model: str):
         model = model.lower()
@@ -32,9 +32,9 @@ class ZhipuProvider(BaseProvider):
         return "chatglm3" in model or "glm-3" in model
 
     def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        kwargs.get("temperature") == 0.
-        kwargs["temperature"] = 0.1
-        kwargs["do_sample"] = False
+        if kwargs.get("temperature") == 0.:
+            del kwargs["temperature"]
+            kwargs["do_sample"] = False
         messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")
@@ -46,6 +46,7 @@ class ZhipuProvider(BaseProvider):
         return messages, kwargs
 
     def _inner_complete_(self, model, messages: List[dict], stream: bool, ** kwargs) -> Any:
+        # logger.debug(f"{self.client.api_key=}")
         response = self.client.chat.completions.create(
             model=model,
             messages=messages,
