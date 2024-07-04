@@ -64,7 +64,7 @@ class QwenProvider(BaseProvider):
         def _gen():
             acc = []
             for chunk in response:
-                logger.debug(f"{chunk=}")
+                # logger.debug(f"{chunk=}")
                 if chunk.status_code == HTTPStatus.OK:
                     choices = chunk.output.choices
                     if choices:
