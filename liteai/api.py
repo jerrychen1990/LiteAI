@@ -19,8 +19,7 @@ def chat(model: str, messages: List[dict | Message],
          **kwargs) -> ModelResponse:
     provider: BaseProvider = get_provider(provider_name=provider, model_name=model, api_key=api_key)
     assert messages
-    if isinstance(messages[0], dict):
-        messages = [Message(**m) for m in messages]
+    messages = [Message(**m) if isinstance(m, dict) else m for m in messages]
 
     response = provider.complete(messages=messages, model=model, stream=stream,
                                  temperature=temperature, top_p=top_p, **kwargs)

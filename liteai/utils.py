@@ -48,13 +48,13 @@ def image2base64(image_path):
     return img_base64
 
 
-def truncate_dict_strings(data, max_length):
+def truncate_dict_strings(data, max_length, key_pattern=None):
     def truncate_string(s):
         return s if len(s) <= max_length else s[:max_length//2] + '...' + s[-max_length//2:]
 
     def process_item(item):
         if isinstance(item, dict):
-            return {k: process_item(v) for k, v in item.items()}
+            return {k: process_item(v) for k, v in item.items() if (key_pattern is None or k in key_pattern)}
         elif isinstance(item, list):
             return [process_item(i) for i in item]
         elif isinstance(item, str):

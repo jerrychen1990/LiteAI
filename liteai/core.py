@@ -4,8 +4,8 @@ from typing import Any, List, Optional, Tuple
 from pydantic import BaseModel, Field
 from loguru import logger
 from typing import Any, Generator, List, Optional
-
 from liteai.utils import truncate_dict_strings
+from snippets import jdumps
 
 
 # class Role(str, Enum):
@@ -76,7 +76,7 @@ class BaseProvider:
     def _support_system(self, model: str):
         return True
 
-    def _handle_system(self, model:str, messages: List[dict]) -> List[dict]:
+    def _handle_system(self, model: str, messages: List[dict]) -> List[dict]:
         system = None
         last_user_message = None
         for message in messages:
@@ -105,8 +105,9 @@ class BaseProvider:
     def complete(self, model, messages: List[Message], stream: bool, **kwargs) -> ModelResponse:
 
         messages, kwargs = self.pre_process(model, messages, stream, **kwargs)
-        show_message = truncate_dict_strings(messages, 50)
-        logger.debug(f"calling {self.key} api with {model=}, messages={show_message}, {stream=}, {kwargs=}")
+        show_message = messages
+        show_message = truncate_dict_strings(messages, 50, key_pattern=["user"])
+        logger.debug(f"calling {self.key} api with {model=},{stream=}, {kwargs=}\n messages={jdumps(show_message)}")
         response = self._inner_complete_(model, messages, stream=stream, **kwargs)
         if stream:
             return self.post_process_stream(response)
