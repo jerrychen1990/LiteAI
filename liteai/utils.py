@@ -54,7 +54,7 @@ def truncate_dict_strings(data, max_length, key_pattern=None):
 
     def process_item(item):
         if isinstance(item, dict):
-            return {k: process_item(v) for k, v in item.items() if (key_pattern is None or k in key_pattern)}
+            return {k: process_item(v) if k in key_pattern else v for k, v in item.items()}
         elif isinstance(item, list):
             return [process_item(i) for i in item]
         elif isinstance(item, str):

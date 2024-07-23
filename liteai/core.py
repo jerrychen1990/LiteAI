@@ -106,7 +106,7 @@ class BaseProvider:
 
         messages, kwargs = self.pre_process(model, messages, stream, **kwargs)
         show_message = messages
-        show_message = truncate_dict_strings(messages, 50, key_pattern=["user"])
+        show_message = truncate_dict_strings(messages, 50, key_pattern=["url"])
         logger.debug(f"calling {self.key} api with {model=},{stream=}, {kwargs=}\n messages={jdumps(show_message)}")
         response = self._inner_complete_(model, messages, stream=stream, **kwargs)
         if stream:
