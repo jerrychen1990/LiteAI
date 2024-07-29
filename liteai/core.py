@@ -69,14 +69,14 @@ class BaseProvider:
 
         messages = [message.model_dump(exclude_none=True) for message in messages]
         if not self._support_system(model):
-            self._handle_system(model, messages)
+            self._handle_system(model, messages, **kwargs)
 
         return messages, new_kwargs
 
     def _support_system(self, model: str):
         return True
 
-    def _handle_system(self, model: str, messages: List[dict]) -> List[dict]:
+    def _handle_system(self, model: str, messages: List[dict], **kwargs) -> List[dict]:
         system = None
         last_user_message = None
         for message in messages:
@@ -87,7 +87,8 @@ class BaseProvider:
         if system and last_user_message:
             logger.warning(f"model:{model} not support system, merge system message to last user message")
             messages.remove(system)
-            last_user_message["content"] = system["content"] + "\n" + last_user_message["content"]
+            if kwargs.get("handle_system", True):
+                last_user_message["content"] = system["content"] + "\n" + last_user_message["content"]
         return messages
 
     @abstractmethod
@@ -107,7 +108,7 @@ class BaseProvider:
         messages, kwargs = self.pre_process(model, messages, stream, **kwargs)
         show_message = messages
         show_message = truncate_dict_strings(messages, 50, key_pattern=["url"])
-        logger.debug(f"calling {self.key} api with {model=},{stream=}, {kwargs=}\n messages={jdumps(show_message)}")
+        logger.debug(f"calling {self.key} api with {model=},{stream=}\nkwargs={jdumps(kwargs)}\nmessages={jdumps(show_message)}")
         response = self._inner_complete_(model, messages, stream=stream, **kwargs)
         if stream:
             return self.post_process_stream(response)

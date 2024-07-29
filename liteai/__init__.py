@@ -7,7 +7,8 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
+from liteai.config import LITEAI_ENV, LOG_HOME
 from snippets import set_logger
 
 
-set_logger("DEV", __name__)
+set_logger(LITEAI_ENV, __name__, log_dir=LOG_HOME)

@@ -26,7 +26,9 @@ def get_provider(provider_name: str, model_name: str, **kwargs) -> BaseProvider:
         model_name = model_name.lower()
         if "glm" in model_name:
             provider_name = ZhipuProvider.key
-        if "qwen" in model_name:
+        elif model_name in ["emohaa"]:
+            provider_name = ZhipuProvider.key
+        elif "qwen" in model_name:
             provider_name = QwenProvider.key
 
     if provider_name not in _PROVIDER_MAP:

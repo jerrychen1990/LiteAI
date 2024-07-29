@@ -18,7 +18,7 @@ from liteai.utils import image2base64
 
 class ZhipuProvider(BaseProvider):
     key: str = "zhipu"
-    allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
+    allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens", "meta"}
     api_key_env = "ZHIPUAI_API_KEY"
 
     def __init__(self, api_key: str = None):

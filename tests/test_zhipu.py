@@ -43,7 +43,7 @@ class TestZhipu(unittest.TestCase):
         resp = chat(model=model, messages=messages, stream=False, temperature=0.)
         show_response(resp)
         self.assertTrue("皮卡丘" in resp.content)
-        
+
     def test_not_support_system_model(self):
         system = "用英文回答我的问题, 80个单词以内"
         question = "列出国土面积最大的五个国家"
@@ -52,4 +52,33 @@ class TestZhipu(unittest.TestCase):
                     Message(role="user", content=question)]
         response = chat(model=model, messages=messages, stream=False, temperature=0.)
         show_response(response)
-        
+
+    def test_lingxin_model(self):
+        model = "emohaa"
+        meta = {
+            "user_info": "30岁的男性软件工程师，兴趣包括阅读、徒步和编程",
+            "bot_info": "Emohaa是一款基于Hill助人理论的情感支持AI，拥有专业的心理咨询话术能力",
+            "bot_name": "Emohaa",
+            "user_name": "张三"
+        }
+        messages = [
+            {"role": "system", "content": "你的名字叫Aifori"},
+            {
+                "role": "assistant",
+                "content": "你好，我是Emohaa，很高兴见到你。请问有什么我可以帮忙的吗？"
+            },
+            {
+                "role": "user",
+                "content": "最近我感觉压力很大，情绪总是很低落。"
+            },
+            {
+                "role": "assistant",
+                "content": "听起来你最近遇到了不少挑战。可以具体说说是什么让你感到压力大吗？"
+            },
+            {
+                "role": "user",
+                "content": "主要是工作上的压力，任务太多，总感觉做不完。"
+            }
+        ]
+        resp = chat(model=model, messages=messages, stream=False, meta=meta)
+        logger.info(f"{resp.content=}")
