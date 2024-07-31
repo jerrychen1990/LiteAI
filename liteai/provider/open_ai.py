@@ -1,49 +1,44 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
-@Time    :   2024/06/25 16:39:05
+@Time    :   2024/07/31 15:13:08
 @Author  :   ChenHao
-@Description  :   
+@Description  :   openai接口
 @Contact :   jerrychen1990@gmail.com
 '''
+
+
 from typing import Any, List, Tuple
 
 from loguru import logger
 
 from liteai.core import ModelResponse, Message, Usage
-from zhipuai import ZhipuAI
 from liteai.provider.base import BaseProvider
-
+from openai import OpenAI
 
 from liteai.utils import image2base64
 
 
-class ZhipuProvider(BaseProvider):
-    key: str = "zhipu"
-    allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens", "meta"}
-    api_key_env = "ZHIPUAI_API_KEY"
+class OpenAIProvider(BaseProvider):
+    key: str = "openai"
+    allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
+    api_key_env = "OPENAI_API_KEY"
 
-    def __init__(self, api_key: str = None, **kwargs):
+    def __init__(self, api_key: str = None, base_url: str = None):
         super().__init__(api_key=api_key)
-        self.client = ZhipuAI(api_key=self.api_key)
+        self.client = OpenAI(api_key=self.api_key, base_url=base_url)
 
     def _support_system(self, model: str):
-        model = model.lower()
-        if "glm-4" in model:
-            return True
-        return "chatglm3" in model or "glm-3" in model
+        return True
 
     def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        if kwargs.get("temperature") == 0.:
-            del kwargs["temperature"]
-            kwargs["do_sample"] = False
         messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")
             if message.get("image"):
                 base64 = image2base64(message["image"])
                 message["content"] = [dict(type="text", text=message["content"]),
-                                      dict(type="image_url", image_url=dict(url=base64))]
+                                      dict(type="image_url", image_url=dict(url="data:image/jpeg;base64," + base64))]
                 del message["image"]
         return messages, kwargs
 
@@ -63,10 +58,6 @@ class ZhipuProvider(BaseProvider):
         return ModelResponse(content=content, usage=usage)
 
     def post_process_stream(self, response) -> ModelResponse:
-        # for item in response:
-        #     logger.debug(f"{item=}")
-        #     # content = item.choices[0].message.content
-
         def _gen():
             acc = []
             for chunk in response:
@@ -93,7 +84,7 @@ class ZhipuProvider(BaseProvider):
 
 
 if __name__ == "__main__":
-    provider = ZhipuProvider()
+    provider = OpenAIProvider()
     messages = [Message(role="user", content="你好")]
-    resp = provider.complete(messages=messages, model="glm-3-turbo", stream=False)
+    resp = provider.complete(messages=messages, model="gpt-4o-mini", stream=False)
     print(resp.content)

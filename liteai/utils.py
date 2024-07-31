@@ -12,15 +12,17 @@ import os
 import sys
 from loguru import logger
 from PIL import Image
+from liteai.core import ModelResponse
+from snippets import batchify
 
 
-def show_response(response):
+def show_response(response: ModelResponse, batch_size=10):
     content = response.content
     if isinstance(content, str):
         logger.info(content)
     else:
-        for item in content:
-            logger.info(item)
+        for item in batchify(content, batch_size):
+            logger.info("".join(item))
 
 
 def set_logger(module):
@@ -48,21 +50,21 @@ def image2base64(image_path):
     return img_base64
 
 
-def truncate_dict_strings(data, max_length, key_pattern=None):
+def truncate_dict_strings(data: dict, max_length: int, key_pattern=None) -> dict:
     def truncate_string(s):
         return s if len(s) <= max_length else s[:max_length//2] + '...' + s[-max_length//2:]
 
-    def process_item(item):
+    def process_item(key, item):
         if isinstance(item, dict):
-            return {k: process_item(v) if k in key_pattern else v for k, v in item.items()}
+            return {k: process_item(k, v) for k, v in item.items()}
         elif isinstance(item, list):
-            return [process_item(i) for i in item]
-        elif isinstance(item, str):
+            return [process_item(key, i) for i in item]
+        elif isinstance(item, str) and key in key_pattern:
             return truncate_string(item)
         else:
             return item
 
-    return process_item(data)
+    return process_item(None, data)
 
 
 if __name__ == "__main__":

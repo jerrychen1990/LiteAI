@@ -12,9 +12,11 @@ from typing import Any, List, Tuple
 
 from loguru import logger
 
-from liteai.core import BaseProvider, ModelResponse, Message, Usage
+from liteai.core import ModelResponse, Message, Usage
+from liteai.provider.base import BaseProvider
 
 import dashscope
+from dashscope.api_entities.dashscope_response import GenerationResponse, MultiModalConversationResponse
 
 
 class QwenProvider(BaseProvider):
@@ -22,7 +24,7 @@ class QwenProvider(BaseProvider):
     allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
     api_key_env = "DASHSCOPE_API_KEY"
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str = None, **kwargs):
         super().__init__(api_key=api_key)
         dashscope.api_key = self.api_key
 
@@ -54,7 +56,10 @@ class QwenProvider(BaseProvider):
     def post_process(self, response: dict) -> ModelResponse:
         logger.debug(f"{response=}, {type(response)=}")
         if response.status_code == HTTPStatus.OK:
-            content = response.output.choices[0].message.content
+            if isinstance(response, GenerationResponse):
+                content = response.output.choices[0].message.content
+            elif isinstance(response, MultiModalConversationResponse):
+                content = response.output.choices[0].message.content[0]["text"]
             usage = Usage(prompt_tokens=response.usage.input_tokens, completion_tokens=response.usage.output_tokens)
             return ModelResponse(content=content, usage=usage)
         else:
@@ -85,5 +90,5 @@ class QwenProvider(BaseProvider):
 if __name__ == "__main__":
     provider = QwenProvider()
     messages = [Message(role="user", content="你好")]
-    resp = provider.complete(messages=messages, model="glm-3-turbo", stream=False)
+    resp = provider.complete(messages=messages, model="qwen-turbo", stream=False)
     print(resp.content)

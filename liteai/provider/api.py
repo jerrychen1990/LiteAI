@@ -8,15 +8,16 @@
 '''
 
 from typing import List
-from liteai.core import BaseProvider
 from liteai.provider.zhipu import ZhipuProvider
 from liteai.provider.qwen import QwenProvider
+from liteai.provider.open_ai import OpenAIProvider
+from liteai.provider.base import BaseProvider
 from loguru import logger
 from dotenv import load_dotenv
 load_dotenv()  # 默认会加载当前目录下的 .env 文件
 
 
-_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider]
+_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 
@@ -30,6 +31,8 @@ def get_provider(provider_name: str, model_name: str, **kwargs) -> BaseProvider:
             provider_name = ZhipuProvider.key
         elif "qwen" in model_name:
             provider_name = QwenProvider.key
+        elif "gpt" in model_name:
+            provider_name = OpenAIProvider.key
 
     if provider_name not in _PROVIDER_MAP:
         raise ValueError(f"Unsupported provider: {provider_name}")

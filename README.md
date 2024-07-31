@@ -10,3 +10,4 @@
 | ---------------------------------------------------------- | ---- | -------- | --------- | --------- | --------- | ----- |
 | [ZhipuAI](https://open.bigmodel.cn/dev/api#glm-4)             | ✅   | ✅       | ✅        |           |           |       |
 | [Qwen](https://help.aliyun.com/zh/dashscope/qwen-api-details) | ✅   | ✅       | ✅        |           |           |       |
+| [OpenAI](https://platform.openai.com/docs/guides/chat-completions) | ✅   | ✅       | ✅        |           |           |       |
