@@ -7,15 +7,9 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
-from typing import Optional
+from typing import Iterable, Optional
 from pydantic import BaseModel, Field
-from typing import Generator, Optional
-
-
-# class Role(str, Enum):
-#     system = "system"
-#     user = "user"
-#     assistant = "assistant"
+from typing import Optional
 
 
 class Message(BaseModel):
@@ -31,7 +25,7 @@ class Usage(BaseModel):
 
 
 class ModelResponse(BaseModel):
-    content: Optional[str | Generator] = Field(description="模型的回复，字符串或者生成器", default=None)
+    content: Optional[str | Iterable[str]] = Field(description="模型的回复，字符串或者生成器", default=None)
     image: Optional[str] = Field(description="图片URL", default=None)
     # tool_calls: Optional[list[ToolCall]] = Field(description="工具调用列表", default=list())
     usage: Optional[Usage] = Field(description="token使用情况", default=None)

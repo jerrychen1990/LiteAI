@@ -6,9 +6,9 @@ python-dotenv
 
 # llm api
 openai
-
 zhipuai
 dashscope
+volcengine-python-sdk[ark]
 
 # 聚合包
 litellm

@@ -8,14 +8,13 @@
 '''
 from typing import Any, List, Tuple
 
-from loguru import logger
 
 from liteai.core import ModelResponse, Message, Usage
 from zhipuai import ZhipuAI
 from liteai.provider.base import BaseProvider
+from snippets import add_callback2gen
 
-
-from liteai.utils import image2base64
+from liteai.utils import get_chunk_data, image2base64, acc_chunks
 
 
 class ZhipuProvider(BaseProvider):
@@ -63,33 +62,9 @@ class ZhipuProvider(BaseProvider):
         return ModelResponse(content=content, usage=usage)
 
     def post_process_stream(self, response) -> ModelResponse:
-        # for item in response:
-        #     logger.debug(f"{item=}")
-        #     # content = item.choices[0].message.content
-
-        def _gen():
-            acc = []
-            for chunk in response:
-                # logger.debug(f"{chunk=}")
-                choices = chunk.choices
-                if choices:
-                    choice = choices[0]
-                    if choice.delta.content:
-                        delta_content = choice.delta.content
-                        # logger.info(f"{delta_content}")
-                        yield delta_content
-                        acc.append(delta_content)
-                _finish_reason = choice.finish_reason
-                if _finish_reason:
-                    if _finish_reason == "sensitive":
-                        logger.warning(f"zhipu api finish with reason {_finish_reason}")
-                        msg = "系统检测到输入或生成内容可能包含不安全或敏感内容，请您避免输入易产生敏感内容的提示语，感谢您的配合。"
-                        acc.append(msg)
-                        yield msg
-
-            resp_msg = "".join(acc).strip()
-            logger.debug(f"model generate answer:{resp_msg}")
-        return ModelResponse(content=_gen())
+        gen = (e for e in (get_chunk_data(chunk) for chunk in response) if e)
+        gen = add_callback2gen(gen, acc_chunks)
+        return ModelResponse(content=gen)
 
 
 if __name__ == "__main__":

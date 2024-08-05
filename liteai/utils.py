@@ -67,6 +67,22 @@ def truncate_dict_strings(data: dict, max_length: int, key_pattern=None) -> dict
     return process_item(None, data)
 
 
+def get_chunk_data(chunk):
+    choices = chunk.choices
+    if choices:
+        # logger.debug(f"{chunk=}")
+        choice = choices[0]
+        if choice.delta.content:
+            delta_content = choice.delta.content
+            # logger.info(f"{delta_content}")
+            return delta_content
+
+
+def acc_chunks(acc):
+    resp_msg = "".join(acc).strip()
+    logger.debug(f"model generate answer:{resp_msg}")
+
+
 if __name__ == "__main__":
     data = {
         'name': 'Pikachu',

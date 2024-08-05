@@ -19,6 +19,7 @@ from snippets.utils import get_latest_version, get_next_version, read2list
 
 def get_install_req():
     req = read2list("requirements.txt")
+    req = [e for e in req if not "#" in e and e.strip()]
     return req
 
 

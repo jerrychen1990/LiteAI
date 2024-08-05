@@ -1,36 +1,32 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
-@Time    :   2024/07/31 15:13:08
+@Time    :   2024/06/25 16:39:05
 @Author  :   ChenHao
-@Description  :   openai接口
+@Description  :   
 @Contact :   jerrychen1990@gmail.com
 '''
-
-
 from typing import Any, List, Tuple
 
+from loguru import logger
+from volcenginesdkarkruntime import Ark
 
+from liteai.config import ARK_ENDPOINT_MAP
 from liteai.core import ModelResponse, Message, Usage
 from liteai.provider.base import BaseProvider
-from openai import OpenAI
-from snippets.utils import add_callback2gen
-
-from liteai.utils import image2base64
-
 from snippets import add_callback2gen
 
 from liteai.utils import get_chunk_data, image2base64, acc_chunks
 
 
-class OpenAIProvider(BaseProvider):
-    key: str = "openai"
+class DoubaoProvider(BaseProvider):
+    key: str = "doubao"
     allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
-    api_key_env = "OPENAI_API_KEY"
+    api_key_env = "ARK_API_KEY"
 
-    def __init__(self, api_key: str = None, base_url: str = None):
+    def __init__(self, api_key: str = None, **kwargs):
         super().__init__(api_key=api_key)
-        self.client = OpenAI(api_key=self.api_key, base_url=base_url)
+        self.client = Ark(api_key=self.api_key)
 
     def _support_system(self, model: str):
         return True
@@ -42,19 +38,20 @@ class OpenAIProvider(BaseProvider):
             if message.get("image"):
                 base64 = image2base64(message["image"])
                 message["content"] = [dict(type="text", text=message["content"]),
-                                      dict(type="image_url", image_url=dict(url="data:image/jpeg;base64," + base64))]
+                                      dict(type="image_url", image_url=dict(url=base64))]
                 del message["image"]
         return messages, kwargs
 
-    def _inner_complete_(self, model, messages: List[dict], stream: bool, ** kwargs) -> Any:
-        # logger.debug(f"{self.client.api_key=}")
-        response = self.client.chat.completions.create(
-            model=model,
+    def _inner_complete_(self, model: str, messages: List[dict], stream: bool, ** kwargs) -> Any:
+        endpoint = ARK_ENDPOINT_MAP[model]
+        completion = self.client.chat.completions.create(
+            model=endpoint,
             messages=messages,
             stream=stream,
             **kwargs
         )
-        return response
+        logger.debug(f"{completion=}")
+        return completion
 
     def post_process(self, response) -> ModelResponse:
         content = response.choices[0].message.content
@@ -62,13 +59,14 @@ class OpenAIProvider(BaseProvider):
         return ModelResponse(content=content, usage=usage)
 
     def post_process_stream(self, response) -> ModelResponse:
+
         gen = (e for e in (get_chunk_data(chunk) for chunk in response) if e)
         gen = add_callback2gen(gen, acc_chunks)
         return ModelResponse(content=gen)
 
 
 if __name__ == "__main__":
-    provider = OpenAIProvider()
+    provider = DoubaoProvider()
     messages = [Message(role="user", content="你好")]
-    resp = provider.complete(messages=messages, model="gpt-4o-mini", stream=False)
+    resp = provider.complete(messages=messages, model="doubao-lite-4k", stream=False)
     print(resp.content)

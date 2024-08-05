@@ -17,6 +17,9 @@ from liteai.provider.base import BaseProvider
 
 import dashscope
 from dashscope.api_entities.dashscope_response import GenerationResponse, MultiModalConversationResponse
+from snippets import add_callback2gen
+
+from liteai.utils import acc_chunks
 
 
 class QwenProvider(BaseProvider):
@@ -66,25 +69,19 @@ class QwenProvider(BaseProvider):
             raise Exception(f"{response.status_code} {response.message}")
 
     def post_process_stream(self, response) -> ModelResponse:
-        def _gen():
-            acc = []
-            for chunk in response:
-                # logger.debug(f"{chunk=}")
-                if chunk.status_code == HTTPStatus.OK:
-                    choices = chunk.output.choices
-                    if choices:
-                        choice = choices[0]
-                        if choice.message.content:
-                            delta_content = choice.message.content
-                            # logger.info(f"{delta_content}")
-                            yield delta_content
-                            acc.append(delta_content)
-                else:
-                    logger.error(f"{chunk.status_code} {chunk.message}")
+        def _handel_chunk(chunk):
 
-            resp_msg = "".join(acc).strip()
-            logger.debug(f"model generate answer:{resp_msg}")
-        return ModelResponse(content=_gen())
+            if chunk.status_code == HTTPStatus.OK:
+                choices = chunk.output.choices
+                if choices:
+                    choice = choices[0]
+                    if choice.message.content:
+                        delta_content = choice.message.content
+                        return delta_content
+
+        gen = (e for e in (_handel_chunk(chunk) for chunk in response) if e)
+        gen = add_callback2gen(gen, acc_chunks)
+        return ModelResponse(content=gen)
 
 
 if __name__ == "__main__":
