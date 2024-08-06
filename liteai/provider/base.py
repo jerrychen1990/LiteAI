@@ -12,7 +12,7 @@ import os
 from typing import Any, List, Tuple
 from loguru import logger
 from typing import Any, List
-from liteai.core import Message, ModelResponse
+from liteai.core import Message, ModelResponse, Voice
 from liteai.utils import truncate_dict_strings
 from snippets import jdumps
 
@@ -96,3 +96,6 @@ class BaseProvider:
             return self.post_process_stream(response)
         else:
             return self.post_process(response)
+
+    def tts(self, text: str, model: str, stream: bool, **kwargs) -> Voice:
+        raise Exception(f"provider {self.__class__.__name__} not support tts!")

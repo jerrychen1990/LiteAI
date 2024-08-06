@@ -1,4 +1,4 @@
-version="${1:-''}"
+version=${1:-''}
 
 echo "run ut"
 bash run_ut.sh

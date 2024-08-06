@@ -4,6 +4,7 @@ pillow
 requests
 python-dotenv
 
+
 # llm api
 openai
 zhipuai
@@ -12,6 +13,10 @@ volcengine-python-sdk[ark]
 
 # 聚合包
 litellm
+
+# 语音相关
+pydub
+simpleaudio
 
 
 

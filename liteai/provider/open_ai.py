@@ -10,6 +10,8 @@
 
 from typing import Any, List, Tuple
 
+from loguru import logger
+
 
 from liteai.core import ModelResponse, Message, Usage
 from liteai.provider.base import BaseProvider
@@ -47,13 +49,13 @@ class OpenAIProvider(BaseProvider):
         return messages, kwargs
 
     def _inner_complete_(self, model, messages: List[dict], stream: bool, ** kwargs) -> Any:
-        # logger.debug(f"{self.client.api_key=}")
         response = self.client.chat.completions.create(
             model=model,
             messages=messages,
             stream=stream,
             **kwargs
         )
+        logger.debug(f"{response=}")
         return response
 
     def post_process(self, response) -> ModelResponse:
