@@ -7,12 +7,9 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
-import os
 from typing import Iterable, Optional
-from loguru import logger
 from pydantic import BaseModel, Field
 from typing import Optional
-from snippets.utils import add_callback2gen
 
 
 class Message(BaseModel):
@@ -40,26 +37,6 @@ class ModelResponse(BaseModel):
     details: Optional[dict] = Field(description="请求模型的细节信息", default=dict())
 
 
-def _dump_voice(voice_stream: Iterable[bytes], path: str):
-    with open(path, "wb") as f:
-        logger.debug(f"save voice to {path}")
-        for chunk in voice_stream:
-            if chunk is not None and chunk != b'\n':
-                decoded_hex = chunk
-                f.write(decoded_hex)
-
-
 class Voice(BaseModel):
     byte_stream: Iterable[bytes] | bytes = Field(description="音频字节流")
     file_path: Optional[str] = Field(description="文件路径", default=None)
-
-    def build_voice(byte_stream, file_path):
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        if file_path:
-            if isinstance(byte_stream, bytes):
-                logger.debug(f"save voice to {file_path}")
-                with open(file_path, "wb") as f:
-                    f.write(byte_stream)
-            else:
-                byte_stream = add_callback2gen(byte_stream, _dump_voice, path=file_path)
-        return Voice(byte_stream=byte_stream, file_path=file_path)

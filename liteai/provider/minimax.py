@@ -16,6 +16,7 @@ from loguru import logger
 import requests
 from liteai.core import Message, Voice
 from liteai.provider.open_ai import OpenAIProvider
+from liteai.voice import build_voice
 from snippets import jdumps
 
 
@@ -81,7 +82,7 @@ class MinimaxProvider(OpenAIProvider):
                                 audio = data["data"]['audio']
                                 return bytes.fromhex(audio)
             byte_stream = (e for e in (_get_bytes(chunk) for chunk in response.raw) if e)
-        voice = Voice.build_voice(byte_stream=byte_stream, file_path=tgt_path)
+        voice = build_voice(byte_stream=byte_stream, file_path=tgt_path)
         return voice
 
 

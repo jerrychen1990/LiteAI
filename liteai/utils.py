@@ -6,14 +6,13 @@
 @Description  :   
 @Contact :   jerrychen1990@gmail.com
 '''
-import io
 import base64
 from io import BytesIO
 import os
 import sys
 from loguru import logger
 from PIL import Image
-from liteai.core import ModelResponse, Voice
+from liteai.core import ModelResponse
 from snippets import batchify
 
 
@@ -72,7 +71,7 @@ def get_chunk_data(chunk):
     choices = chunk.choices
     if choices:
         choice = choices[0]
-        logger.debug(f"{choice=}")
+        # logger.debug(f"{choice=}")
         if choice.delta and choice.delta.content:
             delta_content = choice.delta.content
             # logger.info(f"{delta_content}")
@@ -84,65 +83,10 @@ def acc_chunks(acc):
     logger.debug(f"model generate answer:{resp_msg}")
 
 
-def play_voice(voice: Voice):
-    from pydub import AudioSegment
-
-    from pydub.playback import play
-    from pydub.utils import make_chunks
-
-    logger.debug(f"{type(voice.byte_stream)=}, {voice.file_path=}")
-
-    if os.path.exists(voice.file_path):
-        logger.debug(f"playing voice from {voice.file_path}")
-
-        with open(voice.file_path, "rb") as f:
-            audio_bytes = f.read()
-
-        audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
-        play(audio)
-    else:
-        logger.debug(f"playing voice from byte stream")
-        import simpleaudio as sa
-        audio_buffer = io.BytesIO()
-        for chunk in voice.byte_stream:
-            # 将每个块写入缓冲区
-            audio_buffer.write(chunk)
-
-            # 检查缓冲区大小，如果达到一定大小，则进行播放
-            if audio_buffer.tell() > 4096:  # 例如，每4KB播放一次
-                # 将缓冲区内容转换为 AudioSegment
-                audio_buffer.seek(0)
-                audio_segment = AudioSegment.from_file(audio_buffer, format="mp3")
-
-                # 播放音频段
-                play_obj = sa.play_buffer(audio_segment.raw_data,
-                                          num_channels=audio_segment.channels,
-                                          bytes_per_sample=audio_segment.sample_width,
-                                          sample_rate=audio_segment.frame_rate)
-                play_obj.wait_done()
-
-                # 清空缓冲区
-                audio_buffer = io.BytesIO()
-
-        # 播放剩余部分
-        if audio_buffer.tell() > 0:
-            audio_buffer.seek(0)
-            audio_segment = AudioSegment.from_file(audio_buffer, format="mp3")
-            play_obj = sa.play_buffer(audio_segment.raw_data,
-                                      num_channels=audio_segment.channels,
-                                      bytes_per_sample=audio_segment.sample_width,
-                                      sample_rate=audio_segment.frame_rate)
-            play_obj.wait_done()
-
-
 if __name__ == "__main__":
     data = {
         'name': 'Pikachu',
         'description': 'Pikachu is an Electric-type Pokémon introduced in Generation I.',
-        'abilities': ['Static', 'Lightning Rod'],
-        'evolution': {
-            'pre': 'Pichu',
-            'post': 'Raichu'
-        }
+        'abilities': ['Static', 'Lightning Rod']
     }
     print(truncate_dict_strings(data, 20))

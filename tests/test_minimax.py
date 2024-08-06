@@ -12,7 +12,8 @@ import unittest
 
 from liteai.core import Message, Voice
 from liteai.api import chat, tts
-from liteai.utils import play_voice, set_logger, show_response
+from liteai.utils import set_logger, show_response
+from liteai.voice import play_voice
 from loguru import logger
 
 
