@@ -17,7 +17,6 @@ from liteai.provider.lite_llm import LiteLLMProvider
 
 
 from liteai.provider.base import BaseProvider
-from loguru import logger
 from dotenv import load_dotenv
 load_dotenv()  # 默认会加载当前目录下的 .env 文件
 
@@ -28,7 +27,7 @@ _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 def get_provider(provider_name: str, model_name: str, **kwargs) -> BaseProvider:
     if not provider_name:
-        logger.debug("No provider specified, inferring from model name")
+        # logger.debug("No provider specified, inferring from model name")
         model_name = model_name.lower()
         if "tgi" in model_name:
             provider_name = LiteLLMProvider.key

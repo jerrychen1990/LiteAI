@@ -24,7 +24,7 @@ from liteai.utils import acc_chunks
 
 class QwenProvider(BaseProvider):
     key: str = "qwen"
-    allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
+    allow_kwargs = {"stream", "temperature", "top_p", "max_tokens"}
     api_key_env = "DASHSCOPE_API_KEY"
 
     def __init__(self, api_key: str = None, **kwargs):

@@ -28,6 +28,9 @@ class TestZhipu(unittest.TestCase):
         self.assertIsNotNone(response.usage)
         self.assertTrue("Canada" in response.content)
 
+        response = chat(model=model, messages="你好呀", stream=False, temperature=0., log_level="INFO")
+        show_response(response)
+
     def test_stream(self):
         question = "作一首五言绝句"
         model = "glm-3-turbo"

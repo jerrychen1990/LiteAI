@@ -10,6 +10,7 @@ import io
 import os
 from typing import Iterable
 from loguru import logger
+from liteai.config import DEFAULT_VOICE_CHUNK_SIZE
 from liteai.core import Voice
 from snippets.utils import add_callback2gen
 from pydub import AudioSegment
@@ -36,16 +37,17 @@ def dump_voice_stream(voice_stream: Iterable[bytes], path: str):
         for chunk in voice_stream:
             if chunk is not None and chunk != b'\n':
                 decoded_hex = chunk
+                # logger.debug(f"dump {len(decoded_hex)} bytes to {type(decoded_hex)}, {decoded_hex[:5]=}")
                 f.write(decoded_hex)
 
 
 def get_duration(file_path: str):
     audio = AudioSegment.from_mp3(file_path)
-    duration = len(audio) / 1000  # 时长以毫秒为单位
+    duration = len(audio) / 1000  # 时长以秒为单位
     return duration
 
 
-def play_voice(voice: Voice):
+def play_voice(voice: Voice, buffer_size=DEFAULT_VOICE_CHUNK_SIZE):
 
     logger.debug(f"{type(voice.byte_stream)=}, {voice.file_path=}")
 
@@ -63,10 +65,11 @@ def play_voice(voice: Voice):
         audio_buffer = io.BytesIO()
         for chunk in voice.byte_stream:
             # 将每个块写入缓冲区
+            # logger.debug(f"write {len(chunk)} bytes to buffer")
             audio_buffer.write(chunk)
 
             # 检查缓冲区大小，如果达到一定大小，则进行播放
-            if audio_buffer.tell() > 4096:  # 例如，每4KB播放一次
+            if audio_buffer.tell() > buffer_size:  # 例如，每4KB播放一次
                 # 将缓冲区内容转换为 AudioSegment
                 audio_buffer.seek(0)
                 audio_segment = AudioSegment.from_file(audio_buffer, format="mp3")

@@ -18,3 +18,13 @@ LOG_HOME = os.environ.get("LOG_HOME", os.path.join(LITEAI_HOME, "logs"))
 ARK_ENDPOINT_MAP = {
     "doubao-lite-4k": "ep-20240805191433-4jh54"
 }
+
+
+ZHIPU_MODELS = ["glm-4-0520", "glm-4v", "glm-4-air", "glm-4-flash"]
+OPENAI_MODELS = ["gpt-4o", "gpt-4", "gpt-4o-mini"]
+MINIMAX_MODELS = ["abab6.5s-chat", "speech-01-turbo"]
+QWEN_MODELS = ["qwen-turbo", "qwen-vl-plus"]
+
+ALL_MODELS = ZHIPU_MODELS + OPENAI_MODELS + MINIMAX_MODELS + QWEN_MODELS
+
+DEFAULT_VOICE_CHUNK_SIZE = 2048 * 10

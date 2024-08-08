@@ -27,7 +27,7 @@ class BaseProvider:
             self.api_key = api_key
         else:
             self.api_key = os.environ.get(self.api_key_env)
-        logger.debug(f"{self.api_key=}")
+        # logger.debug(f"{self.api_key=}")
         if not self.api_key:
             raise ValueError(f"api_key is required or set {self.api_key_env} in environment variables")
 
