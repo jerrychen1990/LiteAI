@@ -31,9 +31,10 @@ def can_set_level(func):
             return func(*args, **kwargs)
     return wrapper
 
+
 @can_set_level
 def chat(model: str, messages: List[dict | Message] | str,
-         provider: str = None, api_key: str = None, base_url: str = None,
+         provider: str = None, api_key: str = None, base_url: str = None, tools: List[ToolDesc] = [],
          stream=False, temperature=0.7, top_p=.07,  **kwargs) -> ModelResponse:
     provider: BaseProvider = get_provider(provider_name=provider, model_name=model, api_key=api_key, base_url=base_url)
     if isinstance(messages, str):
@@ -41,9 +42,10 @@ def chat(model: str, messages: List[dict | Message] | str,
     else:
         messages = [Message(**m) if isinstance(m, dict) else m for m in messages]
 
-    response = provider.complete(messages=messages, model=model, stream=stream,
-                                    temperature=temperature, top_p=top_p, **kwargs)
+    response = provider.complete(messages=messages, model=model, stream=stream, tools=tools,
+                                 temperature=temperature, top_p=top_p, **kwargs)
     return response
+
 
 @can_set_level
 def tts(text: str | Iterable[str], model: str,

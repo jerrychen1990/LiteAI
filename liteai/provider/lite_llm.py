@@ -26,8 +26,8 @@ class LiteLLMProvider(BaseProvider):
     api_key_env = "LLM_API_KEY"
 
     def __init__(self, api_key: str = None, base_url: str = None):
-        super().__init__(api_key=api_key)
         self.base_url = base_url
+        super().__init__(api_key=api_key)
 
     def _support_system(self, model: str):
         return True
@@ -51,7 +51,7 @@ class LiteLLMProvider(BaseProvider):
         if "tgi" in model:
             return "huggingface/" + model
 
-    def _inner_complete_(self, model: str, messages: List[dict], stream: bool, ** kwargs) -> Any:
+    def _inner_complete_(self, model: str, messages: List[dict], stream: bool, tools, ** kwargs) -> Any:
         model = self._parse_model(model)
         response = completion(
             model=model,

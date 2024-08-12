@@ -12,7 +12,7 @@ import os
 from typing import Any, List, Tuple
 from loguru import logger
 from typing import Any, List
-from liteai.core import Message, ModelResponse, Voice
+from liteai.core import Message, ModelResponse, ToolDesc, Voice
 from liteai.utils import truncate_dict_strings
 from snippets import jdumps
 
@@ -28,8 +28,8 @@ class BaseProvider:
         else:
             self.api_key = os.environ.get(self.api_key_env)
         # logger.debug(f"{self.api_key=}")
-        if not self.api_key:
-            raise ValueError(f"api_key is required or set {self.api_key_env} in environment variables")
+        if not self.api_key and not getattr(self, "base_url"):
+            raise ValueError(f"api_key is required or set {self.api_key_env} in environment variables or set base_url")
 
     def pre_process(self, model: str, messages: List[Message], stream: str, **kwargs) -> Tuple[List[dict], dict]:
         new_kwargs = dict()
@@ -82,16 +82,21 @@ class BaseProvider:
         raise NotImplementedError
 
     @abstractmethod
-    def _inner_complete_(self, model, messages: List[dict], stream: bool, **kwargs) -> Any:
+    def _inner_complete_(self, model, messages: List[dict], tools: List[ToolDesc], stream: bool, **kwargs) -> Any:
         raise NotImplementedError
 
-    def complete(self, model, messages: List[Message], stream: bool, **kwargs) -> ModelResponse:
+    def complete(self, model, messages: List[Message], stream: bool, tools: List[ToolDesc] = [], **kwargs) -> ModelResponse:
 
         messages, kwargs = self.pre_process(model, messages, stream, **kwargs)
         show_message = messages
         show_message = truncate_dict_strings(messages, 50, key_pattern=["url"])
-        logger.debug(f"calling {self.key} api with {model=},{stream=}\nkwargs={jdumps(kwargs)}\nmessages={jdumps(show_message)}")
-        response = self._inner_complete_(model, messages, stream=stream, **kwargs)
+        calling_detail = f"calling {self.key} api with {model = }, {stream = }\nkwargs = {jdumps(kwargs)}\nmessages = {jdumps(show_message)}"
+        if tools:
+            calling_detail += f"\ntools={jdumps(tools)}"
+        if hasattr(self, "base_url"):
+            calling_detail += f"\nbase_url = {self.base_url}"
+        logger.debug(calling_detail)
+        response = self._inner_complete_(model, messages, stream=stream, tools=tools, **kwargs)
         if stream:
             return self.post_process_stream(response)
         else:

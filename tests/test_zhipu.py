@@ -2,6 +2,7 @@ import unittest
 
 from liteai.core import Message
 from liteai.api import chat
+from liteai.tool import CURRENT_CONTEXT_TOOL
 from liteai.utils import set_logger, show_response
 from loguru import logger
 
@@ -85,3 +86,13 @@ class TestZhipu(unittest.TestCase):
         ]
         resp = chat(model=model, messages=messages, stream=False, meta=meta)
         logger.info(f"{resp.content=}")
+
+    def test_tool_use(self):
+        question = "今天是几号了"
+        model = "glm-4"
+        tools = [CURRENT_CONTEXT_TOOL]
+        tools = [e.tool_desc for e in tools]
+        response = chat(model=model, messages=question, tools=tools, stream=False, temperature=0.)
+        show_response(response)
+        self.assertIsNotNone(response.tool_calls)
+        self.assertEquals("current_context", response.tool_calls[0].name)

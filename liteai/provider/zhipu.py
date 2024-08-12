@@ -6,15 +6,32 @@
 @Description  :   
 @Contact :   jerrychen1990@gmail.com
 '''
+import json
 from typing import Any, List, Tuple
 
+from loguru import logger
 
-from liteai.core import ModelResponse, Message, Usage
+
+from liteai.core import ModelResponse, Message, ToolCall, ToolDesc, Usage
 from zhipuai import ZhipuAI
 from liteai.provider.base import BaseProvider
 from snippets import add_callback2gen
 
 from liteai.utils import get_chunk_data, image2base64, acc_chunks
+
+
+def build_tool_calls(tool_calls) -> List[ToolCall]:
+    # logger.debug(f"tool_calls: {tool_calls}")
+    if tool_calls is None:
+        return []
+    rs = []
+    for tool_call in tool_calls:
+        parameters = json.loads(tool_call.function.arguments)
+
+        tmp = ToolCall(tool_call_id=tool_call.id, name=tool_call.function.name, parameters=parameters)
+        rs.append(tmp)
+    # logger.debug(f"tool_calls: {rs}")
+    return rs
 
 
 class ZhipuProvider(BaseProvider):
@@ -46,20 +63,34 @@ class ZhipuProvider(BaseProvider):
                 del message["image"]
         return messages, kwargs
 
-    def _inner_complete_(self, model, messages: List[dict], stream: bool, ** kwargs) -> Any:
+    @classmethod
+    def tool2zhipu_tool(cls, tool: ToolDesc):
+        properties = {p.name: dict(description=p.description, type=p.type) for p in tool.parameters}
+        required = [p.name for p in tool.parameters if p.required]
+        parameters = dict(type="object", properties=properties, required=required)
+
+        rs = dict(type="function", function=dict(name=tool.name, description=tool.description, parameters=parameters))
+        return rs
+
+    def _inner_complete_(self, model, messages: List[dict], stream: bool, tools: List[ToolDesc], **kwargs) -> Any:
         # logger.debug(f"{self.client.api_key=}")
+        zhipu_tools = [self.tool2zhipu_tool(tool) for tool in tools]
         response = self.client.chat.completions.create(
             model=model,
             messages=messages,
             stream=stream,
+            tools=zhipu_tools,
             **kwargs
         )
         return response
 
     def post_process(self, response) -> ModelResponse:
+        logger.debug(f"{response=}")
         content = response.choices[0].message.content
+        tool_calls = build_tool_calls(response.choices[0].message.tool_calls)
+
         usage = Usage(**response.usage.model_dump())
-        return ModelResponse(content=content, usage=usage)
+        return ModelResponse(content=content, usage=usage, tool_calls=tool_calls)
 
     def post_process_stream(self, response) -> ModelResponse:
         gen = (e for e in (get_chunk_data(chunk) for chunk in response) if e)

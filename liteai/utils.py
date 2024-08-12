@@ -14,10 +14,15 @@ from loguru import logger
 from PIL import Image
 from liteai.core import ModelResponse
 from snippets import batchify
+from snippets.utils import jdumps
 
 
 def show_response(response: ModelResponse, batch_size=10):
     content = response.content
+    if response.tool_calls:
+        for tool_call in response.tool_calls:
+            logger.info(f"tool_call: {jdumps(tool_call.model_dump())}")
+
     if isinstance(content, str):
         logger.info(content)
     else:
