@@ -28,6 +28,11 @@ class Usage(BaseModel):
         return self.total_tokens if self.total_tokens is not None else self.prompt_tokens + self.completion_tokens
 
 
+class LLMGenConfig(BaseModel):
+    temperature: float = Field(description="temperature", default=0.7)
+    max_tokens: Optional[int] = Field(description="max_tokens", default=None)
+
+
 class ModelResponse(BaseModel):
     content: Optional[str | Iterable[str]] = Field(description="模型的回复，字符串或者生成器", default=None)
     image: Optional[str] = Field(description="图片URL", default=None)

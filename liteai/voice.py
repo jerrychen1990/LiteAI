@@ -18,7 +18,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 
 
-def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str):
+def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str = None):
     if file_path:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -31,14 +31,16 @@ def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str):
     return Voice(byte_stream=byte_stream, file_path=file_path)
 
 
-def dump_voice_stream(voice_stream: Iterable[bytes], path: str):
+def dump_voice_stream(voice_stream: Iterable[bytes] | bytes, path: str):
     with open(path, "wb") as f:
         logger.debug(f"save voice to {path}")
-        for chunk in voice_stream:
-            if chunk is not None and chunk != b'\n':
-                decoded_hex = chunk
-                # logger.debug(f"dump {len(decoded_hex)} bytes to {type(decoded_hex)}, {decoded_hex[:5]=}")
-                f.write(decoded_hex)
+        if isinstance(voice_stream, bytes):
+            f.write(voice_stream)
+        else:
+            for chunk in voice_stream:
+                if chunk is not None and chunk != b'\n':
+                    decoded_hex = chunk
+                    f.write(decoded_hex)
 
 
 def get_duration(file_path: str):
@@ -47,25 +49,27 @@ def get_duration(file_path: str):
     return duration
 
 
+def play_file(file_path: str):
+    logger.debug(f"playing voice from {file_path}")
+    with open(file_path, "rb") as f:
+        audio_bytes = f.read()
+    audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
+    play(audio)
+
+
 def play_voice(voice: Voice, buffer_size=DEFAULT_VOICE_CHUNK_SIZE):
 
     logger.debug(f"{type(voice.byte_stream)=}, {voice.file_path=}")
 
     if voice.file_path and os.path.exists(voice.file_path):
-        logger.debug(f"playing voice from {voice.file_path}")
-
-        with open(voice.file_path, "rb") as f:
-            audio_bytes = f.read()
-
-        audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
-        play(audio)
+        play_file(voice.file_path)
     else:
         logger.debug(f"playing voice from byte stream")
         import simpleaudio as sa
         audio_buffer = io.BytesIO()
         for chunk in voice.byte_stream:
             # 将每个块写入缓冲区
-            # logger.debug(f"write {len(chunk)} bytes to buffer")
+            logger.debug(f"write {len(chunk)}  {chunk[:4]} bytes to buffer")
             audio_buffer.write(chunk)
 
             # 检查缓冲区大小，如果达到一定大小，则进行播放

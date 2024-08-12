@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 load_dotenv()  # 默认会加载当前目录下的 .env 文件
 
 
-_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider, DoubaoProvider, MinimaxProvider]
+_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider, DoubaoProvider, MinimaxProvider, LiteLLMProvider]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 

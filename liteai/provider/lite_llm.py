@@ -22,8 +22,8 @@ from liteai.utils import acc_chunks, get_chunk_data, image2base64
 
 class LiteLLMProvider(BaseProvider):
     key: str = "litellm"
-    allow_kwargs = {"do_sample", "stream", "temperature", "top_p", "max_tokens"}
-    api_key_env = "OPENAI_API_KEY"
+    allow_kwargs = {"stream", "temperature", "top_p", "max_tokens"}
+    api_key_env = "LLM_API_KEY"
 
     def __init__(self, api_key: str = None, base_url: str = None):
         super().__init__(api_key=api_key)
