@@ -10,6 +10,7 @@ import json
 from typing import Any, List, Tuple
 
 from loguru import logger
+import numpy as np
 
 
 from liteai.core import ModelResponse, Message, ToolCall, ToolDesc, Usage
@@ -49,11 +50,11 @@ class ZhipuProvider(BaseProvider):
             return True
         return "chatglm3" in model or "glm-3" in model
 
-    def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
         if kwargs.get("temperature") == 0.:
             del kwargs["temperature"]
             kwargs["do_sample"] = False
-        messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
+        messages, _, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")
             if message.get("image"):
@@ -61,7 +62,8 @@ class ZhipuProvider(BaseProvider):
                 message["content"] = [dict(type="text", text=message["content"]),
                                       dict(type="image_url", image_url=dict(url=base64))]
                 del message["image"]
-        return messages, kwargs
+        zhipu_tools = [self.tool2zhipu_tool(tool) for tool in tools]
+        return messages, zhipu_tools, kwargs
 
     @classmethod
     def tool2zhipu_tool(cls, tool: ToolDesc):
@@ -72,14 +74,12 @@ class ZhipuProvider(BaseProvider):
         rs = dict(type="function", function=dict(name=tool.name, description=tool.description, parameters=parameters))
         return rs
 
-    def _inner_complete_(self, model, messages: List[dict], stream: bool, tools: List[ToolDesc], **kwargs) -> Any:
-        # logger.debug(f"{self.client.api_key=}")
-        zhipu_tools = [self.tool2zhipu_tool(tool) for tool in tools]
+    def _inner_complete_(self, model, messages: List[dict], stream: bool, tools: List[dict], **kwargs) -> Any:
         response = self.client.chat.completions.create(
             model=model,
             messages=messages,
             stream=stream,
-            tools=zhipu_tools,
+            tools=tools,
             **kwargs
         )
         return response
@@ -96,6 +96,23 @@ class ZhipuProvider(BaseProvider):
         gen = (e for e in (get_chunk_data(chunk) for chunk in response) if e)
         gen = add_callback2gen(gen, acc_chunks)
         return ModelResponse(content=gen)
+
+    def _embedding_single_try(self, text: str, model: str, norm=True, **kwargs) -> List[float]:
+        try:
+            resp = self.client.embeddings.create(
+                model=model,
+                input=text,
+                **kwargs
+            )
+            embedding = resp.data[0].embedding
+            if norm:
+                embedding = embedding / np.linalg.norm(embedding, 2)
+                embedding = embedding.tolist()
+            return embedding
+        except Exception as e:
+            text_sample = text[:20]
+            msg = f"calling zhipu api embedding with get error: {e}, with {text_sample=}, {len(text)=}, {model=}"
+            raise Exception(msg)
 
 
 if __name__ == "__main__":

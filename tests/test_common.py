@@ -1,7 +1,3 @@
-import unittest
-
-from loguru import logger
-
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
@@ -11,9 +7,19 @@ from loguru import logger
 @Contact :   jerrychen1990@gmail.com
 '''
 from liteai.api import list_models
+import unittest
+
+from loguru import logger
+
+from liteai.utils import set_logger
 
 
 class TestCommon(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        set_logger(__name__)
+        logger.info("start test common api")
+
     def test_list_model(self):
         models = list_models()
         logger.info(f"models: {models}")

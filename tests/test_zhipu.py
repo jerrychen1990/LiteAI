@@ -1,9 +1,10 @@
 import unittest
 
+
 from liteai.core import Message
-from liteai.api import chat
+from liteai.api import chat, embedding
 from liteai.tool import CURRENT_CONTEXT_TOOL
-from liteai.utils import set_logger, show_response
+from liteai.utils import get_embd_similarity, set_logger, show_embeds, show_response
 from loguru import logger
 
 
@@ -96,3 +97,13 @@ class TestZhipu(unittest.TestCase):
         show_response(response)
         self.assertIsNotNone(response.tool_calls)
         self.assertEquals("current_context", response.tool_calls[0].name)
+
+    def test_embd(self):
+        tests = ["你好", "hello"]
+        embds = embedding(texts=tests, model="embedding-3", batch_size=2, dimensions=512)
+        show_embeds(embds)
+        self.assertEquals(2, len(embds))
+        self.assertEquals(512, len(embds[0]))
+        sim = get_embd_similarity(*embds)
+        logger.info(f"{sim=:.2f}")
+        self.assertGreaterEqual(sim, 0.5)

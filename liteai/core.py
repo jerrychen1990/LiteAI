@@ -10,6 +10,14 @@
 from typing import Any, Dict, Iterable, List, Optional
 from pydantic import BaseModel, Field
 from typing import Optional
+import warnings
+
+warnings.filterwarnings("ignore", message=".*protected_namespaces.*")
+
+
+class BaseModel(BaseModel):
+    class MyConfig:
+        protected_namespaces = ()
 
 
 class Message(BaseModel):
@@ -78,6 +86,9 @@ class ModelResponse(BaseModel):
     # perf: Optional[Perf] = Field(description="性能指标", default=None)
     tool_calls: Optional[List[ToolCall]] = Field(description="工具调用列表", default=None)
     details: Optional[dict] = Field(description="请求模型的细节信息", default=dict())
+
+    class Config:
+        protected_namespaces = ()
 
 
 class Voice(BaseModel):

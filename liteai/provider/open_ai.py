@@ -13,7 +13,7 @@ from typing import Any, List, Tuple
 from loguru import logger
 
 
-from liteai.core import ModelResponse, Message, Usage
+from liteai.core import ModelResponse, Message, ToolDesc, Usage
 from liteai.provider.base import BaseProvider
 from openai import OpenAI
 from snippets.utils import add_callback2gen
@@ -37,8 +37,8 @@ class OpenAIProvider(BaseProvider):
     def _support_system(self, model: str):
         return True
 
-    def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
+    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")
             if message.get("image"):
@@ -46,9 +46,9 @@ class OpenAIProvider(BaseProvider):
                 message["content"] = [dict(type="text", text=message["content"]),
                                       dict(type="image_url", image_url=dict(url="data:image/jpeg;base64," + base64))]
                 del message["image"]
-        return messages, kwargs
+        return messages, tools, kwargs
 
-    def _inner_complete_(self, model, messages: List[dict], stream: bool, ** kwargs) -> Any:
+    def _inner_complete_(self, model, messages: List[dict], stream: bool, tools: List[dict], ** kwargs) -> Any:
         response = self.client.chat.completions.create(
             model=model,
             messages=messages,

@@ -44,6 +44,12 @@ def get_provider(provider_name: str, model_name: str, **kwargs) -> BaseProvider:
         elif "abab" in model_name or "speech-01" in model_name:
             provider_name = MinimaxProvider.key
 
+        # embd模型路由
+        elif model_name in ["embedding-3", "embedding-2"]:
+            provider_name = ZhipuProvider.key
+        else:
+            raise ValueError(f"Unsupported model: {model_name}")
+
     if provider_name not in _PROVIDER_MAP:
         raise ValueError(f"Unsupported provider: {provider_name}")
 

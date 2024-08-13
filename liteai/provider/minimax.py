@@ -14,7 +14,7 @@ from typing import List
 from litellm import Tuple
 from loguru import logger
 import requests
-from liteai.core import Message, Voice
+from liteai.core import Message, ToolDesc, Voice
 from liteai.provider.open_ai import OpenAIProvider
 from liteai.voice import build_voice
 from snippets import jdumps
@@ -28,12 +28,12 @@ class MinimaxProvider(OpenAIProvider):
     def __init__(self, api_key: str = None, **kwargs):
         super().__init__(api_key=api_key, base_url="https://api.minimax.chat/v1")
 
-    def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
         if kwargs.get("temperature") == 0.:
             logger.debug(f"provider {self.key} not support temperature=0, setting temperature to 0.0001")
             kwargs["temperature"] = 0.0001
-        messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
-        return messages, kwargs
+        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
+        return messages, tools, kwargs
 
     def tts(self, text: str, model="speech-01-turbo", version="t2a_v2", tgt_path: str = None,
             append=False, stream=False, voice_id="tianxin_xiaoling", speed=1, pitch=0) -> Voice:

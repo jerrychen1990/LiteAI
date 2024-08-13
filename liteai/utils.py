@@ -10,8 +10,10 @@ import base64
 from io import BytesIO
 import os
 import sys
+from typing import List
 from loguru import logger
 from PIL import Image
+import numpy as np
 from liteai.core import ModelResponse
 from snippets import batchify
 from snippets.utils import jdumps
@@ -24,10 +26,21 @@ def show_response(response: ModelResponse, batch_size=10):
             logger.info(f"tool_call: {jdumps(tool_call.model_dump())}")
 
     if isinstance(content, str):
-        logger.info(content)
+        logger.info("content:\n"+content)
     else:
+        logger.info("stream content:")
         for item in batchify(content, batch_size):
             logger.info("".join(item))
+
+
+def show_embeds(embds: List[List[float]] | List[float], sample_num=2, sample_size=4):
+    if isinstance(embds[0], list):
+        logger.info(f"embd dim:{len(embds[0])}")
+        for i, embd in enumerate(embds[:sample_num]):
+            logger.info(f"embd[{i}]: {embd[:sample_size]}")
+    else:
+        logger.info(f"embd dim:{len(embds)}")
+        logger.info(f"embd: {embds[:sample_size]}")
 
 
 def set_logger(module):
@@ -86,6 +99,13 @@ def get_chunk_data(chunk):
 def acc_chunks(acc):
     resp_msg = "".join(acc).strip()
     logger.debug(f"model generate answer:{resp_msg}")
+
+
+def get_embd_similarity(embd1: List[float], embd2: List[float]):
+    embd1 = np.array(embd1)
+    embd2 = np.array(embd2)
+    sim = np.dot(embd1, embd2) / (np.linalg.norm(embd1) * np.linalg.norm(embd2))
+    return sim
 
 
 if __name__ == "__main__":

@@ -56,5 +56,13 @@ def tts(text: str | Iterable[str], model: str,
     return voice
 
 
+@can_set_level
+def embedding(texts: str | List[str], model: str,
+              provider: str = None, api_key: str = None, norm=True, batch_size=8, **kwargs) -> List[List[float]] | List[float]:
+    provider: BaseProvider = get_provider(provider_name=provider, model_name=model, api_key=api_key)
+    voice = provider.embedding(texts=texts, model=model, norm=norm, batch_size=batch_size, **kwargs)
+    return voice
+
+
 def list_models() -> List[str]:
     return ALL_MODELS

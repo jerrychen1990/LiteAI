@@ -12,7 +12,7 @@ from typing import Any, List, Tuple
 
 from loguru import logger
 
-from liteai.core import ModelResponse, Message, Usage
+from liteai.core import ModelResponse, Message, ToolDesc, Usage
 from liteai.provider.base import BaseProvider
 
 import dashscope
@@ -31,8 +31,8 @@ class QwenProvider(BaseProvider):
         super().__init__(api_key=api_key)
         dashscope.api_key = self.api_key
 
-    def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
+    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
         if stream:
             kwargs["incremental_output"] = True
         for message in messages:
@@ -41,7 +41,7 @@ class QwenProvider(BaseProvider):
                 message["content"] = [dict(text=message["content"]),
                                       dict(image=message["image"])]
                 del message["image"]
-        return messages, kwargs
+        return messages, tools, kwargs
 
     def _inner_complete_(self, model, messages: List[dict], stream: bool, ** kwargs) -> Any:
         if "vl" in model:

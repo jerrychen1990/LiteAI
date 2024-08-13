@@ -12,7 +12,7 @@ from loguru import logger
 from volcenginesdkarkruntime import Ark
 
 from liteai.config import ARK_ENDPOINT_MAP
-from liteai.core import ModelResponse, Message, Usage
+from liteai.core import ModelResponse, Message, ToolDesc, Usage
 from liteai.provider.base import BaseProvider
 from snippets import add_callback2gen
 
@@ -31,8 +31,8 @@ class DoubaoProvider(BaseProvider):
     def _support_system(self, model: str):
         return True
 
-    def pre_process(self, model: str, messages: List[Message], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        messages, kwargs = super().pre_process(model, messages, stream, **kwargs)
+    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")
             if message.get("image"):
@@ -40,7 +40,7 @@ class DoubaoProvider(BaseProvider):
                 message["content"] = [dict(type="text", text=message["content"]),
                                       dict(type="image_url", image_url=dict(url=base64))]
                 del message["image"]
-        return messages, kwargs
+        return messages, tools, kwargs
 
     def _inner_complete_(self, model: str, messages: List[dict], stream: bool, ** kwargs) -> Any:
         endpoint = ARK_ENDPOINT_MAP[model]
