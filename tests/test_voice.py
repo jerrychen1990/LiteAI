@@ -13,6 +13,6 @@ class TestVoice(unittest.TestCase):
         logger.info("start test voice job")
 
     def test_file_voice(self):
-        voice_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "dnll.mp3")
+        voice_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "hello.mp3")
         voice = file2voice(voice_path)
         play_voice(voice)

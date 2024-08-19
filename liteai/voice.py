@@ -107,7 +107,7 @@ def play_bytes(byte_stream: Iterable[bytes], min_buffer_size=8192*10, max_second
         raw_size = end_offset - offset
         # logger.debug(f"{producer_finished.is_set()=}, {raw_size=}, {offset=}, {end_offset=}")
         if raw_size > 0:
-            logger.debug(f"{producer_finished.is_set()=}, {raw_size=}, {offset=}, {end_offset=}")
+            # logger.debug(f"{producer_finished.is_set()=}, {raw_size=}, {offset=}, {end_offset=}")
             if not check_min_size or raw_size >= min_buffer_size:
                 audio_buffer.seek(offset)
                 audio_segment = AudioSegment.from_file(audio_buffer, format="mp3")
