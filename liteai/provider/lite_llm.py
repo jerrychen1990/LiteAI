@@ -17,7 +17,7 @@ from liteai.core import ModelResponse, Message, ToolDesc, Usage
 from liteai.provider.base import BaseProvider
 from snippets.utils import add_callback2gen
 
-from liteai.utils import acc_chunks, get_chunk_data, image2base64
+from liteai.utils import acc_chunks, get_text_chunk, image2base64
 
 
 class LiteLLMProvider(BaseProvider):
@@ -69,7 +69,7 @@ class LiteLLMProvider(BaseProvider):
         return ModelResponse(content=content, usage=usage)
 
     def post_process_stream(self, response) -> ModelResponse:
-        gen = (e for e in (get_chunk_data(chunk) for chunk in response) if e)
+        gen = (e for e in (get_text_chunk(chunk) for chunk in response) if e)
         gen = add_callback2gen(gen, acc_chunks)
         return ModelResponse(content=gen)
 

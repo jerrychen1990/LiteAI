@@ -22,7 +22,7 @@ class BaseModel(BaseModel):
 
 class Message(BaseModel):
     role: str = Field(description="The role of the sender in the conversation.", pattern="^(system|user|assistant)$", example="user")
-    content: str = Field(description="The content of the message.")
+    content: str | Iterable[str] = Field(description="The content of the message.")
     image: Optional[str] = Field(description="local path of image", default=None)
 
 

@@ -7,10 +7,13 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 import io
+import itertools
 import os
+import threading
+import time
 from typing import Iterable
 from loguru import logger
-from liteai.config import DEFAULT_VOICE_CHUNK_SIZE
+from liteai.config import DEFAULT_VOICE_CHUNK_SIZE, MAX_PLAY_SECONDS
 from liteai.core import Voice
 from snippets.utils import add_callback2gen
 from pydub import AudioSegment
@@ -21,7 +24,6 @@ from pydub.playback import play
 def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str = None):
     if file_path:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
         if isinstance(byte_stream, bytes):
             logger.debug(f"save voice to {file_path}")
             with open(file_path, "wb") as f:
@@ -29,6 +31,19 @@ def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str = None):
         else:
             byte_stream = add_callback2gen(byte_stream, dump_voice_stream, path=file_path)
     return Voice(byte_stream=byte_stream, file_path=file_path)
+
+
+def file2voice(file: str, chunk_size=None):
+    def byte_gen():
+        with open(file, "rb") as f:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    return
+                yield chunk
+                logger.debug(f"yielding chunk, with size {len(chunk)}")
+    byte_stream = byte_gen()
+    return build_voice(byte_stream=byte_stream)
 
 
 def dump_voice_stream(voice_stream: Iterable[bytes] | bytes, path: str):
@@ -49,51 +64,70 @@ def get_duration(file_path: str):
     return duration
 
 
-def play_file(file_path: str):
+def play_file(file_path: str, max_seconds: int = None):
     logger.debug(f"playing voice from {file_path}")
     with open(file_path, "rb") as f:
         audio_bytes = f.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
+    if max_seconds:
+        audio = audio[:max_seconds * 1000]
     play(audio)
 
 
-def play_voice(voice: Voice, buffer_size=DEFAULT_VOICE_CHUNK_SIZE):
+def play_voice(voice: Voice, buffer_size=DEFAULT_VOICE_CHUNK_SIZE, max_seconds=None):
 
     logger.debug(f"{type(voice.byte_stream)=}, {voice.file_path=}")
 
     if voice.file_path and os.path.exists(voice.file_path):
-        play_file(voice.file_path)
+        play_file(voice.file_path, max_seconds=max_seconds)
     else:
         logger.debug(f"playing voice from byte stream")
-        import simpleaudio as sa
-        audio_buffer = io.BytesIO()
-        for chunk in voice.byte_stream:
-            # 将每个块写入缓冲区
-            logger.debug(f"write {len(chunk)}  {chunk[:4]} bytes to buffer")
+        voice.byte_stream, play_stream = itertools.tee(voice.byte_stream)
+        play_bytes(play_stream, buffer_size, max_seconds=max_seconds)
+
+
+def play_bytes(byte_stream: Iterable[bytes], min_buffer_size=8192*10, max_seconds=None):
+    audio_buffer = io.BytesIO()
+    producer_finished = threading.Event()
+    offset = 0
+
+    def _buf_reader():
+        for chunk in byte_stream:
+            # logger.debug(f"write {len(chunk)} bytes to buffer")
             audio_buffer.write(chunk)
+            audio_buffer.flush()
+        producer_finished.set()
 
-            # 检查缓冲区大小，如果达到一定大小，则进行播放
-            if audio_buffer.tell() > buffer_size:  # 例如，每4KB播放一次
-                # 将缓冲区内容转换为 AudioSegment
-                audio_buffer.seek(0)
+    thread = threading.Thread(target=_buf_reader)
+    thread.start()
+    seconds_left = max_seconds if max_seconds else MAX_PLAY_SECONDS
+
+    def play_segment(check_min_size: bool, seconds_left: int):
+        end_offset = audio_buffer.tell()
+        raw_size = end_offset - offset
+        # logger.debug(f"{producer_finished.is_set()=}, {raw_size=}, {offset=}, {end_offset=}")
+        if raw_size > 0:
+            logger.debug(f"{producer_finished.is_set()=}, {raw_size=}, {offset=}, {end_offset=}")
+            if not check_min_size or raw_size >= min_buffer_size:
+                audio_buffer.seek(offset)
                 audio_segment = AudioSegment.from_file(audio_buffer, format="mp3")
+                audio_segment = audio_segment[:seconds_left * 1000]
+                seconds_left -= len(audio_segment) / 1000
+                duration = len(audio_segment)
+                logger.debug(f"play audio segment with size:{len(audio_segment.raw_data)}, {raw_size=}, duration:{duration}")
+                play(audio_segment)
+                return end_offset, seconds_left
+        else:
+            time.sleep(0.2)
+        return offset, seconds_left
 
-                # 播放音频段
-                play_obj = sa.play_buffer(audio_segment.raw_data,
-                                          num_channels=audio_segment.channels,
-                                          bytes_per_sample=audio_segment.sample_width,
-                                          sample_rate=audio_segment.frame_rate)
-                play_obj.wait_done()
+    while True:
+        if producer_finished.is_set():
+            offset, seconds_left = play_segment(False, seconds_left)
+            break
+        else:
+            offset, seconds_left = play_segment(True, seconds_left)
+        if seconds_left <= 0:
+            break
 
-                # 清空缓冲区
-                audio_buffer = io.BytesIO()
-
-        # 播放剩余部分
-        if audio_buffer.tell() > 0:
-            audio_buffer.seek(0)
-            audio_segment = AudioSegment.from_file(audio_buffer, format="mp3")
-            play_obj = sa.play_buffer(audio_segment.raw_data,
-                                      num_channels=audio_segment.channels,
-                                      bytes_per_sample=audio_segment.sample_width,
-                                      sample_rate=audio_segment.frame_rate)
-            play_obj.wait_done()
+    # thread.join()

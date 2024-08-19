@@ -18,7 +18,7 @@ from zhipuai import ZhipuAI
 from liteai.provider.base import BaseProvider
 from snippets import add_callback2gen
 
-from liteai.utils import get_chunk_data, image2base64, acc_chunks
+from liteai.utils import extract_tool_calls, get_text_chunk, image2base64, acc_chunks
 
 
 def build_tool_calls(tool_calls) -> List[ToolCall]:
@@ -93,9 +93,11 @@ class ZhipuProvider(BaseProvider):
         return ModelResponse(content=content, usage=usage, tool_calls=tool_calls)
 
     def post_process_stream(self, response) -> ModelResponse:
-        gen = (e for e in (get_chunk_data(chunk) for chunk in response) if e)
+        tool_calls, response = extract_tool_calls(response)
+        logger.debug(f"{tool_calls=}")
+        gen = (e for e in (get_text_chunk(chunk) for chunk in response) if e)
         gen = add_callback2gen(gen, acc_chunks)
-        return ModelResponse(content=gen)
+        return ModelResponse(content=gen, tool_calls=tool_calls)
 
     def _embedding_single_try(self, text: str, model: str, norm=True, **kwargs) -> List[float]:
         try:

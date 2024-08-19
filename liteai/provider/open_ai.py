@@ -22,7 +22,7 @@ from liteai.utils import image2base64
 
 from snippets import add_callback2gen
 
-from liteai.utils import get_chunk_data, image2base64, acc_chunks
+from liteai.utils import get_text_chunk, image2base64, acc_chunks
 
 
 class OpenAIProvider(BaseProvider):
@@ -64,7 +64,7 @@ class OpenAIProvider(BaseProvider):
         return ModelResponse(content=content, usage=usage)
 
     def post_process_stream(self, response) -> ModelResponse:
-        gen = (e for e in (get_chunk_data(chunk) for chunk in response) if e)
+        gen = (e for e in (get_text_chunk(chunk) for chunk in response) if e)
         gen = add_callback2gen(gen, acc_chunks)
         return ModelResponse(content=gen)
 

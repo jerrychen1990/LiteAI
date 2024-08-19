@@ -10,6 +10,7 @@
 
 from functools import wraps
 
+
 from liteai.config import ALL_MODELS
 from liteai.core import *
 from liteai.provider.api import get_provider
@@ -42,6 +43,7 @@ def chat(model: str, messages: List[dict | Message] | str,
     else:
         messages = [Message(**m) if isinstance(m, dict) else m for m in messages]
 
+    # logger.debug(f"{tools=}")
     response = provider.complete(messages=messages, model=model, stream=stream, tools=tools,
                                  temperature=temperature, top_p=top_p, **kwargs)
     return response

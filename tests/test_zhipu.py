@@ -90,10 +90,11 @@ class TestZhipu(unittest.TestCase):
 
     def test_tool_use(self):
         question = "今天是几号了"
-        model = "glm-4"
+        model = "glm-4-0520"
         tools = [CURRENT_CONTEXT_TOOL]
         tools = [e.tool_desc for e in tools]
-        response = chat(model=model, messages=question, tools=tools, stream=False, temperature=0.)
+        # tools = []
+        response = chat(model=model, messages=question, tools=tools, stream=True, temperature=0.)
         show_response(response)
         self.assertIsNotNone(response.tool_calls)
         self.assertEquals("current_context", response.tool_calls[0].name)

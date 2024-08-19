@@ -10,11 +10,11 @@ import base64
 from io import BytesIO
 import os
 import sys
-from typing import List
+from typing import Iterable, List
 from loguru import logger
 from PIL import Image
 import numpy as np
-from liteai.core import ModelResponse
+from liteai.core import ModelResponse, ToolCall
 from snippets import batchify
 from snippets.utils import jdumps
 
@@ -85,7 +85,7 @@ def truncate_dict_strings(data: dict, max_length: int, key_pattern=None) -> dict
     return process_item(None, data)
 
 
-def get_chunk_data(chunk):
+def get_text_chunk(chunk):
     choices = chunk.choices
     if choices:
         choice = choices[0]
@@ -94,6 +94,19 @@ def get_chunk_data(chunk):
             delta_content = choice.delta.content
             # logger.info(f"{delta_content}")
             return delta_content
+
+
+def extract_tool_calls(chunks: Iterable):
+    tool_calls = []
+    for chunk in chunks:
+        logger.debug(f"{chunk=}")
+        if delta := chunk.choices[0].delta:
+            if delta.tool_calls:
+                for tc in delta.tool_calls:
+                    tool_call = ToolCall(name=tc.function.name, parameters=eval(tc.function.arguments), tool_call_id=tc.id)
+                    tool_calls.append(tool_call)
+        break
+    return tool_calls, chunks
 
 
 def acc_chunks(acc):
