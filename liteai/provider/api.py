@@ -10,6 +10,7 @@
 from typing import List
 from liteai.provider.doubao import DoubaoProvider
 from liteai.provider.minimax import MinimaxProvider
+from liteai.provider.tgi import TGIProvider
 from liteai.provider.zhipu import ZhipuProvider
 from liteai.provider.qwen import QwenProvider
 from liteai.provider.open_ai import OpenAIProvider
@@ -21,7 +22,7 @@ from dotenv import load_dotenv
 load_dotenv()  # 默认会加载当前目录下的 .env 文件
 
 
-_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider, DoubaoProvider, MinimaxProvider, LiteLLMProvider]
+_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider, DoubaoProvider, MinimaxProvider, LiteLLMProvider, TGIProvider]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 
@@ -30,7 +31,7 @@ def get_provider(provider_name: str, model_name: str, **kwargs) -> BaseProvider:
         # logger.debug("No provider specified, inferring from model name")
         model_name = model_name.lower()
         if "tgi" in model_name:
-            provider_name = LiteLLMProvider.key
+            provider_name = TGIProvider.key
         elif "glm" in model_name:
             provider_name = ZhipuProvider.key
         elif model_name in ["emohaa"]:
