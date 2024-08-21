@@ -6,6 +6,7 @@
 @Description  :   
 @Contact :   jerrychen1990@gmail.com
 '''
+import itertools
 import json
 from typing import Any, List, Tuple
 
@@ -66,7 +67,7 @@ class ZhipuProvider(BaseProvider):
         return messages, zhipu_tools, kwargs
 
     @classmethod
-    def tool2zhipu_tool(cls, tool: ToolDesc):
+    def tool2zhipu_tool(cls, tool: ToolDesc) -> dict:
         properties = {p.name: dict(description=p.description, type=p.type) for p in tool.parameters}
         required = [p.name for p in tool.parameters if p.required]
         parameters = dict(type="object", properties=properties, required=required)
@@ -93,7 +94,8 @@ class ZhipuProvider(BaseProvider):
         return ModelResponse(content=content, usage=usage, tool_calls=tool_calls)
 
     def post_process_stream(self, response) -> ModelResponse:
-        tool_calls, response = extract_tool_calls(response)
+        toll_call_response, response = itertools.tee(response)
+        tool_calls = extract_tool_calls(toll_call_response)
         logger.debug(f"{tool_calls=}")
         gen = (e for e in (get_text_chunk(chunk) for chunk in response) if e)
         gen = add_callback2gen(gen, acc_chunks)

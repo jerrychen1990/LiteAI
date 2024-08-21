@@ -27,10 +27,15 @@ def show_response(response: ModelResponse, batch_size=10):
 
     if isinstance(content, str):
         logger.info("content:\n"+content)
+        return content
     else:
         logger.info("stream content:")
+        acc = ""
         for item in batchify(content, batch_size):
-            logger.info("".join(item))
+            chunk = "".join(item)
+            logger.info(chunk)
+            acc += chunk
+        return acc
 
 
 def show_embeds(embds: List[List[float]] | List[float], sample_num=2, sample_size=4):
@@ -106,7 +111,7 @@ def extract_tool_calls(chunks: Iterable):
                     tool_call = ToolCall(name=tc.function.name, parameters=eval(tc.function.arguments), tool_call_id=tc.id)
                     tool_calls.append(tool_call)
         break
-    return tool_calls, chunks
+    return tool_calls
 
 
 def acc_chunks(acc):

@@ -99,6 +99,17 @@ class TestZhipu(unittest.TestCase):
         self.assertIsNotNone(response.tool_calls)
         self.assertEquals("current_context", response.tool_calls[0].name)
 
+        question = "世界上面积第三大的国家是哪个？"
+        model = "glm-4-0520"
+        tools = [CURRENT_CONTEXT_TOOL]
+        tools = [e.tool_desc for e in tools]
+        # tools = []
+        response = chat(model=model, messages=question, tools=tools, stream=True, temperature=0.)
+        self.assertEqual(0, len(response.tool_calls))
+        content = show_response(response)
+        # logger.info("content:\n"+content)
+        self.assertTrue("中国" in content)
+
     def test_embd(self):
         tests = ["你好", "hello"]
         embds = embedding(texts=tests, model="embedding-3", batch_size=2, dimensions=512)
