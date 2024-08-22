@@ -1,44 +1,22 @@
-import unittest
 
 
 from liteai.core import Message
 from liteai.api import chat, embedding
-from liteai.tool import CURRENT_CONTEXT_TOOL
+from liteai.tool import CurrentContextToolDesc
 from liteai.utils import get_embd_similarity, set_logger, show_embeds, show_response
 from loguru import logger
 
+from tests.base import BasicTestCase
 
-class TestZhipu(unittest.TestCase):
+
+class TestZhipu(BasicTestCase):
     @classmethod
     def setUpClass(cls):
         set_logger(__name__)
         logger.info("start test job")
 
-    def test_sync(self):
-        system = "用英文回答我的问题, 80个单词以内"
-        question = "列出国土面积最大的五个国家"
-        model = "glm-4-air"
-        messages = [Message(role="system", content=system),
-                    Message(role="user", content=question)]
-        response = chat(model=model, messages=messages, stream=False, temperature=0.)
-        show_response(response)
-        self.assertIsNotNone(response.usage)
-        messages.extend([Message(role="assistant", content=response.content),
-                        Message(role="user", content="介绍第二个")])
-        response = chat(model=model, messages=messages, stream=False, temperature=0.)
-        show_response(response)
-        self.assertIsNotNone(response.usage)
-        self.assertTrue("Canada" in response.content)
-
-        response = chat(model=model, messages="你好呀", stream=False, temperature=0., log_level="INFO")
-        show_response(response)
-
-    def test_stream(self):
-        question = "作一首五言绝句"
-        model = "glm-3-turbo"
-        messages = [Message(role="user", content=question)]
-        resp = chat(model=model, messages=messages, stream=True, temperature=0.6)
-        show_response(resp)
+    def test_basic_llm(self):
+        super().test_basic_llm("glm-4-air")
 
     def test_vision_chat(self):
         question = "这张图里有什么?"
@@ -91,18 +69,16 @@ class TestZhipu(unittest.TestCase):
     def test_tool_use(self):
         question = "今天是几号了"
         model = "glm-4-0520"
-        tools = [CURRENT_CONTEXT_TOOL]
-        tools = [e.tool_desc for e in tools]
-        # tools = []
+        tools = [CurrentContextToolDesc]
         response = chat(model=model, messages=question, tools=tools, stream=True, temperature=0.)
-        show_response(response)
+        content = show_response(response)
         self.assertIsNotNone(response.tool_calls)
+        self.assertEquals(CurrentContextToolDesc.content_resp, content)
         self.assertEquals("current_context", response.tool_calls[0].name)
 
         question = "世界上面积第三大的国家是哪个？"
         model = "glm-4-0520"
-        tools = [CURRENT_CONTEXT_TOOL]
-        tools = [e.tool_desc for e in tools]
+        tools = [CurrentContextToolDesc]
         # tools = []
         response = chat(model=model, messages=question, tools=tools, stream=True, temperature=0.)
         self.assertEqual(0, len(response.tool_calls))

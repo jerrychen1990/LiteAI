@@ -104,7 +104,7 @@ def get_text_chunk(chunk):
 def extract_tool_calls(chunks: Iterable):
     tool_calls = []
     for chunk in chunks:
-        logger.debug(f"{chunk=}")
+        # logger.debug(f"{chunk=}")
         if delta := chunk.choices[0].delta:
             if delta.tool_calls:
                 for tc in delta.tool_calls:

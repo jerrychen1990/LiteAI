@@ -45,17 +45,12 @@ class ZhipuProvider(BaseProvider):
         super().__init__(api_key=api_key)
         self.client = ZhipuAI(api_key=self.api_key)
 
-    def _support_system(self, model: str):
-        model = model.lower()
-        if "glm-4" in model:
-            return True
-        return "chatglm3" in model or "glm-3" in model
-
-    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], List[dict], dict]:
         if kwargs.get("temperature") == 0.:
             del kwargs["temperature"]
             kwargs["do_sample"] = False
         messages, _, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
+        # logger.debug(f"{messages=}")
         for message in messages:
             # logger.debug(f"{message=}")
             if message.get("image"):
@@ -63,8 +58,8 @@ class ZhipuProvider(BaseProvider):
                 message["content"] = [dict(type="text", text=message["content"]),
                                       dict(type="image_url", image_url=dict(url=base64))]
                 del message["image"]
-        zhipu_tools = [self.tool2zhipu_tool(tool) for tool in tools]
-        return messages, zhipu_tools, kwargs
+        tools = [self.tool2zhipu_tool(tool) for tool in tools]
+        return messages, tools, kwargs
 
     @classmethod
     def tool2zhipu_tool(cls, tool: ToolDesc) -> dict:
@@ -89,7 +84,6 @@ class ZhipuProvider(BaseProvider):
         logger.debug(f"{response=}")
         content = response.choices[0].message.content
         tool_calls = build_tool_calls(response.choices[0].message.tool_calls)
-
         usage = Usage(**response.usage.model_dump())
         return ModelResponse(content=content, usage=usage, tool_calls=tool_calls)
 

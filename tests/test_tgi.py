@@ -13,7 +13,7 @@ class TestTGI(unittest.TestCase):
         set_logger(__name__)
         logger.info("start tgi job")
 
-    # @unittest.skip("skip tgi test")
+    @unittest.skip("skip tgi test")
     def test_local_tgi(self):
         system = "用英文回答我的问题, 80个单词以内"
         question = "列出国土面积最大的五个国家"

@@ -12,7 +12,7 @@ from loguru import logger
 from volcenginesdkarkruntime import Ark
 
 from liteai.config import ARK_ENDPOINT_MAP
-from liteai.core import ModelResponse, Message, ToolDesc, Usage
+from liteai.core import ModelCard, ModelResponse, Message, ToolDesc, Usage
 from liteai.provider.base import BaseProvider
 from snippets import add_callback2gen
 
@@ -28,10 +28,7 @@ class DoubaoProvider(BaseProvider):
         super().__init__(api_key=api_key)
         self.client = Ark(api_key=self.api_key)
 
-    def _support_system(self, model: str):
-        return True
-
-    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
         messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")

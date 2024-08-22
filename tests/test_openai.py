@@ -7,42 +7,24 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
-import unittest
 
+import unittest
 from liteai.core import Message
 from liteai.api import chat
 from liteai.utils import set_logger, show_response
 from loguru import logger
 
+from tests.base import BasicTestCase
 
-class TestOpenAI(unittest.TestCase):
+
+class TestOpenAI(BasicTestCase):
     @classmethod
     def setUpClass(cls):
         set_logger(__name__)
         logger.info("start test openai")
 
-    def test_sync(self):
-        system = "用英文回答我的问题, 80个单词以内"
-        question = "列出国土面积最大的五个国家"
-        model = "gpt-4o-mini"
-        messages = [Message(role="system", content=system),
-                    Message(role="user", content=question)]
-        response = chat(model=model, messages=messages, stream=False, temperature=0.)
-        show_response(response)
-        self.assertIsNotNone(response.usage)
-        messages.extend([Message(role="assistant", content=response.content),
-                        Message(role="user", content="介绍第二个")])
-        response = chat(model=model, messages=messages, stream=False, temperature=0.)
-        show_response(response)
-        self.assertIsNotNone(response.usage)
-        self.assertTrue("Canada" in response.content)
-
-    def test_stream(self):
-        question = "作一首五言绝句"
-        model = "gpt-4o-mini"
-        messages = [Message(role="user", content=question)]
-        resp = chat(model=model, messages=messages, stream=True, temperature=0.6)
-        show_response(resp)
+    def test_basic_llm(self):
+        super().test_basic_llm("gpt-3.5-turbo")
 
     def test_vision_chat(self):
         question = "这张图里有什么?"
@@ -53,6 +35,7 @@ class TestOpenAI(unittest.TestCase):
         show_response(resp)
         self.assertTrue("皮卡丘" in resp.content)
 
+    @unittest.skip("本地模型不一定部署")
     def test_local_model(self):
         question = "作一首五言绝句"
         model = "glm4-9b-local"

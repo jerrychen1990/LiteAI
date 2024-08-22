@@ -34,7 +34,9 @@ def get_current_context(time_type: str):
 
 
 CurrentContextToolDesc = ToolDesc(name="current_context", description="获取当前时间",
-                                  parameters=[Parameter(name="time_type", description="时间格式，分为两种datetime:精确到秒, date:精确到日", type="string", required=True)])
+                                  parameters=[Parameter(name="time_type", description="时间格式，分为两种datetime:精确到秒, date:精确到日",
+                                                        type="string", required=True)],
+                                  content_resp="正在帮您获取当前时间...")
 
 CURRENT_CONTEXT_TOOL = Tool(tool_desc=CurrentContextToolDesc, callable=get_current_context)
 

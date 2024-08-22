@@ -3,11 +3,12 @@
 '''
 @Time    :   2024/06/25 16:53:45
 @Author  :   ChenHao
-@Description  :   
+@Description  :
 @Contact :   jerrychen1990@gmail.com
 '''
 
 from typing import List
+from liteai.core import ModelCard
 from liteai.provider.doubao import DoubaoProvider
 from liteai.provider.minimax import MinimaxProvider
 from liteai.provider.tgi import TGIProvider
@@ -26,33 +27,32 @@ _ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvide
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 
-def get_provider(provider_name: str, model_name: str, **kwargs) -> BaseProvider:
-    if not provider_name:
-        # logger.debug("No provider specified, inferring from model name")
-        model_name = model_name.lower()
-        if "tgi" in model_name:
-            provider_name = TGIProvider.key
-        elif "glm" in model_name:
-            provider_name = ZhipuProvider.key
-        elif model_name in ["emohaa"]:
-            provider_name = ZhipuProvider.key
-        elif "qwen" in model_name:
-            provider_name = QwenProvider.key
-        elif "gpt" in model_name:
-            provider_name = OpenAIProvider.key
-        elif "doubao" in model_name:
-            provider_name = DoubaoProvider.key
-        elif "abab" in model_name or "speech-01" in model_name:
-            provider_name = MinimaxProvider.key
+def get_provider_key(model_name: str) -> str:
+    model_name = model_name.lower()
+    if "tgi" in model_name:
+        provider_name = TGIProvider.key
+    elif "glm" in model_name:
+        provider_name = ZhipuProvider.key
+    elif model_name in ["emohaa"]:
+        provider_name = ZhipuProvider.key
+    elif "qwen" in model_name:
+        provider_name = QwenProvider.key
+    elif "gpt" in model_name:
+        provider_name = OpenAIProvider.key
+    elif "doubao" in model_name:
+        provider_name = DoubaoProvider.key
+    elif "abab" in model_name or "speech-01" in model_name:
+        provider_name = MinimaxProvider.key
+    else:
+        raise ValueError(f"Unsupported model: {model_name}")
+    return provider_name
 
-        # embd模型路由
-        elif model_name in ["embedding-3", "embedding-2"]:
-            provider_name = ZhipuProvider.key
-        else:
-            raise ValueError(f"Unsupported model: {model_name}")
 
+def get_provider(model: ModelCard, api_key: str = None, base_url: str = None, **kwargs):
+    provider_name = model.provider
     if provider_name not in _PROVIDER_MAP:
         raise ValueError(f"Unsupported provider: {provider_name}")
 
-    provider = _PROVIDER_MAP[provider_name]
-    return provider(**kwargs)
+    provider_cls = _PROVIDER_MAP[provider_name]
+    provider = provider_cls(api_key=api_key, base_url=base_url, **kwargs)
+    return provider

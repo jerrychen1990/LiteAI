@@ -7,6 +7,7 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
+from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -53,6 +54,7 @@ class ToolDesc(BaseModel):
     name: str = Field(..., description="工具名称")
     description: str = Field(..., description="工具描述")
     parameters: List[Parameter] = Field(..., description="工具参数")
+    content_resp: Optional[str] = Field(description="调用工具时，返回的文字内容", default=None)
 
     def to_markdown(self):
         tool_info = f"**[名称]**:{self.name}\n\n**[描述]**:{self.description}\n\n"
@@ -84,7 +86,7 @@ class ModelResponse(BaseModel):
     # tool_calls: Optional[list[ToolCall]] = Field(description="工具调用列表", default=list())
     usage: Optional[Usage] = Field(description="token使用情况", default=None)
     # perf: Optional[Perf] = Field(description="性能指标", default=None)
-    tool_calls: Optional[List[ToolCall]] = Field(description="工具调用列表", default=None)
+    tool_calls: Optional[List[ToolCall]] = Field(description="工具调用列表", default=[])
     details: Optional[dict] = Field(description="请求模型的细节信息", default=dict())
 
     class Config:
@@ -94,3 +96,18 @@ class ModelResponse(BaseModel):
 class Voice(BaseModel):
     byte_stream: Iterable[bytes] | bytes = Field(description="音频字节流")
     file_path: Optional[str] = Field(description="文件路径", default=None)
+
+
+class ModelType(str, Enum):
+    LLM = "llm"
+    TTS = "tts"
+    EMBEDDING = "embedding"
+
+
+class ModelCard(BaseModel):
+    name: str = Field(description="模型名称")
+    model_type: ModelType = Field(description="模型类型", default=ModelType.LLM)
+    description: str = Field(description="模型描述", default="")
+    support_system: bool = Field(description="是否支持系统对话", default=True)
+    support_vision: bool = Field(description="是否支持图像输入", default=False)
+    provider: str = Field(description="模型调用器key", default=None)
