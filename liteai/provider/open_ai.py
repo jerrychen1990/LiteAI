@@ -55,12 +55,12 @@ class OpenAIProvider(BaseProvider):
         logger.debug(f"{response=}")
         return response
 
-    def post_process(self, response) -> ModelResponse:
+    def post_process(self, response, **kwargs) -> ModelResponse:
         content = response.choices[0].message.content
         usage = Usage(**response.usage.model_dump())
         return ModelResponse(content=content, usage=usage)
 
-    def post_process_stream(self, response) -> ModelResponse:
+    def post_process_stream(self, response, **kwargs) -> ModelResponse:
         gen = (e for e in (get_text_chunk(chunk) for chunk in response) if e)
         gen = add_callback2gen(gen, acc_chunks)
         return ModelResponse(content=gen)

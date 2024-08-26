@@ -56,7 +56,7 @@ class QwenProvider(BaseProvider):
                                                  **kwargs)
         return response
 
-    def post_process(self, response: dict) -> ModelResponse:
+    def post_process(self, response: dict, **kwargs) -> ModelResponse:
         logger.debug(f"{response=}, {type(response)=}")
         if response.status_code == HTTPStatus.OK:
             if isinstance(response, GenerationResponse):
@@ -68,7 +68,7 @@ class QwenProvider(BaseProvider):
         else:
             raise Exception(f"{response.status_code} {response.message}")
 
-    def post_process_stream(self, response) -> ModelResponse:
+    def post_process_stream(self, response, **kwargs) -> ModelResponse:
         def _handel_chunk(chunk):
 
             if chunk.status_code == HTTPStatus.OK:

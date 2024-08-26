@@ -76,7 +76,7 @@ class BaseProvider:
         return messages
 
     @abstractmethod
-    def post_process(self, response) -> ModelResponse:
+    def post_process(self, response, **kwargs) -> ModelResponse:
         raise NotImplementedError
 
     @abstractmethod
@@ -93,9 +93,9 @@ class BaseProvider:
         self.show_calling_info(messages, dict_tools, model, stream, **kwargs)
         response = self._inner_complete_(model.name, messages, stream=stream, tools=dict_tools, **kwargs)
         if stream:
-            resp = self.post_process_stream(response)
+            resp = self.post_process_stream(response, **kwargs)
         else:
-            resp = self.post_process(response)
+            resp = self.post_process(response, **kwargs)
         resp = self.on_tool_call(resp, tools)
         return resp
 

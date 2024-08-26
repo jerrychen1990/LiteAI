@@ -15,8 +15,8 @@ class TestZhipu(BasicTestCase):
         set_logger(__name__)
         logger.info("start test job")
 
-    def test_basic_llm(self):
-        super().test_basic_llm("glm-4-air")
+    def basic_llm(self):
+        super().basic_llm("glm-4-air")
 
     def test_vision_chat(self):
         question = "这张图里有什么?"

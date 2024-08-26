@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Tuple
 
 from litellm import completion
 
-from liteai.core import ModelResponse, Message, ToolDesc, Usage
+from liteai.core import ModelCard, ModelResponse, Message, ToolDesc, Usage
 from liteai.provider.base import BaseProvider
 from snippets.utils import add_callback2gen
 
@@ -35,6 +35,7 @@ from liteai.utils import acc_chunks, get_text_chunk
 
 
 class TGIProvider(BaseProvider):
+    key = "tgi"
     allow_kwargs = {"stream", "temperature", "top_p", "max_tokens"}
 
     def __init__(self, base_url: str = None, **kwargs):
@@ -52,9 +53,9 @@ class TGIProvider(BaseProvider):
         messages = [dict(content=_input, role="user")]
         return messages
 
-    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
         messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
-        if "zhipu" in model or "glm" in model:
+        if "zhipu" in model or "glm" in model.name:
             messages = self._parse_zhipu_message(messages)
             kwargs.update({"stop":  ["<|endoftext|>", "<|user|>", "<|observation|>"]})
         return messages, tools, kwargs
@@ -74,18 +75,20 @@ class TGIProvider(BaseProvider):
         )
         return response
 
-    def post_process(self, response) -> ModelResponse:
+    def post_process(self, response, **kwargs) -> ModelResponse:
         # logger.debug(f"{response=}")
         content = response.choices[0].message.content
+        stop = kwargs.get("stop", [])
+        for s in stop:
+            if s in content:
+                content = content[:content.index(s)]
         usage = Usage(**response.usage.model_dump())
+
         return ModelResponse(content=content, usage=usage)
 
-    def post_process_stream(self, response) -> ModelResponse:
-        # def content_gen():
-        #     for item in response:
-        #         logger.debug(f"{item=}")
-        #     if item.choices[0]        # return ModelResponse(content="response")
-
+    def post_process_stream(self, response, **kwargs) -> ModelResponse:
         gen = (e for e in (get_text_chunk(chunk) for chunk in response) if e)
+        stops = kwargs.get("stop", [])
+        gen = (e for e in gen if e and not e in stops)
         gen = add_callback2gen(gen, acc_chunks)
         return ModelResponse(content=gen)

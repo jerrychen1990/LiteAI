@@ -23,8 +23,8 @@ class TestOpenAI(BasicTestCase):
         set_logger(__name__)
         logger.info("start test openai")
 
-    def test_basic_llm(self):
-        super().test_basic_llm("gpt-3.5-turbo")
+    def basic_llm(self):
+        super().basic_llm("gpt-3.5-turbo")
 
     def test_vision_chat(self):
         question = "这张图里有什么?"

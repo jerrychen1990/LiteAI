@@ -55,6 +55,8 @@ def get_modelcard(model_name: str, **kwargs) -> ModelCard:
         provider_key = kwargs.pop("provider_key", None)
         if not provider_key:
             provider_key = get_provider_key(model_name=model_name)
+        logger.debug(f"provider_key: {provider_key}")
+
         model_card = ModelCard(name=model_name, description=model_name, provider=provider_key)
         return model_card
     return ALL_MODEL_MAP[model_name]

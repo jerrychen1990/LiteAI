@@ -80,14 +80,14 @@ class ZhipuProvider(BaseProvider):
         )
         return response
 
-    def post_process(self, response) -> ModelResponse:
+    def post_process(self, response, **kwargs) -> ModelResponse:
         logger.debug(f"{response=}")
         content = response.choices[0].message.content
         tool_calls = build_tool_calls(response.choices[0].message.tool_calls)
         usage = Usage(**response.usage.model_dump())
         return ModelResponse(content=content, usage=usage, tool_calls=tool_calls)
 
-    def post_process_stream(self, response) -> ModelResponse:
+    def post_process_stream(self, response, **kwargs) -> ModelResponse:
         toll_call_response, response = itertools.tee(response)
         tool_calls = extract_tool_calls(toll_call_response)
         logger.debug(f"{tool_calls=}")

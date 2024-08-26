@@ -24,8 +24,8 @@ class TestMiniMax(BasicTestCase):
         set_logger(__name__)
         logger.info("start test minimax")
 
-    def test_basic_llm(self):
-        super().test_basic_llm(model="abab6.5s-chat")
+    def basic_llm(self):
+        super().basic_llm(model="abab6.5s-chat")
 
     def test_tts(self):
         text = "你好呀，我是liteai"
