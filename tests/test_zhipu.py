@@ -71,7 +71,7 @@ class TestZhipu(BasicTestCase):
         question = "今天是几号了"
         model = "glm-4-0520"
         tools = [CurrentContextToolDesc]
-        response = agent_chat(model=model, messages=question, tools=tools, stream=True, temperature=0., log_level="INFO")
+        response = agent_chat(model=model, messages=question, tools=tools, stream=True, temperature=0., log_level="DEBUG")
         content = show_response(response)
         import datetime
 

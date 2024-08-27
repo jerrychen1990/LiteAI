@@ -15,6 +15,7 @@ from liteai.core import ModelCard, ModelType
 ZHIPU_MODELS = [
     ModelCard(name="glm-4-0520", description="glm-4-0520", provider="zhipu"),
     ModelCard(name="glm-4-air", description="glm-4-air", provider="zhipu"),
+    ModelCard(name="glm-4-airx", description="glm-4-airx", provider="zhipu"),
     ModelCard(name="glm-4-flash", description="glm-4-flash", provider="zhipu"),
     ModelCard(name="glm-4v", description="glm-4v", provider="zhipu", support_vision=True),
     ModelCard(name="emohaa", description="emohaa", provider="zhipu", support_vision=True),

@@ -133,7 +133,12 @@ class BaseProvider:
     def show_calling_info(self, messages: List[Message], tools: List[dict], model: ModelCard, stream: bool, **kwargs):
         show_message = messages
         show_message = truncate_dict_strings(messages, 50, key_pattern=["url"])
-        calling_detail = f"calling {self.key} api with {model.name=}, {stream = }\nmessages = {jdumps(show_message)}"
+        message_str = ""
+        for idx, message in enumerate(show_message, start=1):
+            message_str += f"[{idx}].<{message['role']}>\n{message['content']}\n"
+
+        calling_detail = f"calling {self.key} api with {model.name=}, {stream = }\nmessages=\n{message_str}"
+
         if tools:
             calling_detail += f"\ntools={jdumps(tools)}"
         if hasattr(self, "base_url"):
