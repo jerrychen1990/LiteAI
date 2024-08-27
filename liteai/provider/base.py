@@ -12,7 +12,7 @@ import os
 from typing import Any, List, Tuple
 from loguru import logger
 from typing import Any, List
-from liteai.core import Message, ModelCard, ModelResponse, ToolDesc, Voice
+from liteai.core import Message, ModelCard, ModelResponse, ToolCall, ToolDesc, Voice
 from liteai.utils import truncate_dict_strings
 from snippets import jdumps, retry, multi_thread
 
@@ -31,7 +31,8 @@ class BaseProvider:
         if not self.api_key and not getattr(self, "base_url"):
             raise ValueError(f"api_key is required or set {self.api_key_env} in environment variables or set base_url")
 
-    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: str, **kwargs) -> Tuple[List[dict], List[dict], dict]:
+    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc],
+                    tool_calls: List[ToolCall], stream: str, **kwargs) -> Tuple[List[dict], List[dict], dict]:
         new_kwargs = dict()
         ignore_kwargs = dict()
         # logger.debug(f"{self.allow_kwargs=}")
@@ -50,6 +51,7 @@ class BaseProvider:
             logger.warning(f"ignoring {len(ignore_kwargs)} unknown kwargs: {ignore_kwargs}")
 
         messages = [message.model_dump(exclude_none=True) for message in messages]
+
         # logger.debug(f"{messages=}")
 
         if not model.support_system:
@@ -57,6 +59,11 @@ class BaseProvider:
         # logger.debug(f"{messages=}")
 
         tools = [tool.model_dump(exclude_none=True) for tool in tools]
+        for tool_call in tool_calls:
+            if tool_call.resp:
+                tool_call_message = dict(role="tool", content=jdumps(tool_call.resp), tool_call_id=tool_call.tool_call_id)
+                logger.debug(f"adding tool_call_message: {tool_call_message}")
+                messages.append(tool_call_message)
 
         return messages, tools, new_kwargs
 
@@ -87,8 +94,9 @@ class BaseProvider:
     def _inner_complete_(self, model: str, messages: List[dict], tools: List[ToolDesc], stream: bool, **kwargs) -> Any:
         raise NotImplementedError
 
-    def complete(self, model: ModelCard, messages: List[Message], stream: bool, tools: List[ToolDesc] = [], **kwargs) -> ModelResponse:
-        messages, dict_tools, kwargs = self.pre_process(model, messages, tools, stream, **kwargs)
+    def complete(self, model: ModelCard, messages: List[Message], stream: bool,
+                 tools: List[ToolDesc] = [], tool_calls: List[ToolCall] = [], **kwargs) -> ModelResponse:
+        messages, dict_tools, kwargs = self.pre_process(model=model, messages=messages, tools=tools, stream=stream, tool_calls=tool_calls, ** kwargs)
 
         self.show_calling_info(messages, dict_tools, model, stream, **kwargs)
         response = self._inner_complete_(model.name, messages, stream=stream, tools=dict_tools, **kwargs)
@@ -103,15 +111,22 @@ class BaseProvider:
         tool_calls = []
         tools2desc = {tool.name: tool for tool in tools}
         tool_content = ""
+        logger.debug(f"on tool call for {len(response.tool_calls)} tools")
         for tool_call in response.tool_calls:
             if tool_call.name not in tools2desc:
                 continue
-            tool_desc = tools2desc[tool_call.name]
+            tool_desc: ToolDesc = tools2desc[tool_call.name]
+            tool_call.tool_desc = tool_desc
             if tool_desc.content_resp:
                 tool_content = tool_desc.content_resp
+            # if tool_desc.is_inner:
+                # logger.debug(f"calling inner tool {tool_call.name}")
+                # tool_call.resp = tool_desc.func(**tool_call.parameters)
             tool_calls.append(tool_call)
         response.tool_calls = tool_calls
+        logger.debug(f"get {len(tool_calls)} valid tool calls")
         if tool_content:
+            logger.debug(f"set tool content {tool_content} to response")
             response.content = tool_content if isinstance(response.content, str) else (tool_content)
         return response
 

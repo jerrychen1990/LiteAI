@@ -14,7 +14,7 @@ from loguru import logger
 import numpy as np
 
 
-from liteai.core import ModelResponse, Message, ToolCall, ToolDesc, Usage
+from liteai.core import ModelCard, ModelResponse, Message, ToolCall, ToolDesc, Usage
 from zhipuai import ZhipuAI
 from liteai.provider.base import BaseProvider
 from snippets import add_callback2gen
@@ -45,11 +45,11 @@ class ZhipuProvider(BaseProvider):
         super().__init__(api_key=api_key)
         self.client = ZhipuAI(api_key=self.api_key)
 
-    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], List[dict], dict]:
+    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], List[dict], dict]:
         if kwargs.get("temperature") == 0.:
             del kwargs["temperature"]
             kwargs["do_sample"] = False
-        messages, _, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
+        messages, _, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
         # logger.debug(f"{messages=}")
         for message in messages:
             # logger.debug(f"{message=}")

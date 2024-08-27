@@ -55,6 +55,8 @@ class ToolDesc(BaseModel):
     description: str = Field(..., description="工具描述")
     parameters: List[Parameter] = Field(..., description="工具参数")
     content_resp: Optional[str] = Field(description="调用工具时，返回的文字内容", default=None)
+    is_local: bool = Field(description="是否本地工具", default=False)
+    is_inner: bool = Field(description="是否在回答过程中需要执行的函数", default=False)
 
     def to_markdown(self):
         tool_info = f"**[名称]**:{self.name}\n\n**[描述]**:{self.description}\n\n"
@@ -69,9 +71,10 @@ class ToolDesc(BaseModel):
 class ToolCall(BaseModel):
     tool_call_id: str = Field(description="工具调用ID,用于跟踪调用链")
     name: str = Field(description="工具名称")
+    tool_desc: Optional[ToolDesc] = Field(description="工具描述", default=None)
     parameters: Dict[str, Any] = Field(description="工具调用的参数")
     extra_info: dict = Field(description="额外的信息", default=dict())
-    resp: Any = Field(description="工具执行的返回结果,为执行时为None", default=None)
+    resp: Dict = Field(description="工具执行的返回结果,为执行时为None", default=None)
 
     def to_markdown(self):
         return f"**[调用工具]**: {self.name} **[参数]**: {self.parameters} **[返回结果]**: {self.resp}"

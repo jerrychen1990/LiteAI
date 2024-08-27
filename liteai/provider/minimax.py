@@ -32,7 +32,7 @@ class MinimaxProvider(OpenAIProvider):
         if kwargs.get("temperature") == 0.:
             logger.debug(f"provider {self.key} not support temperature=0, setting temperature to 0.0001")
             kwargs["temperature"] = 0.0001
-        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
+        messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
         return messages, tools, kwargs
 
     def tts(self, text: str, model: ModelCard, version="t2a_v2", tgt_path: str = None,

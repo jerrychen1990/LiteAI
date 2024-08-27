@@ -54,7 +54,7 @@ class TGIProvider(BaseProvider):
         return messages
 
     def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
+        messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
         if "zhipu" in model or "glm" in model.name:
             messages = self._parse_zhipu_message(messages)
             kwargs.update({"stop":  ["<|endoftext|>", "<|user|>", "<|observation|>"]})

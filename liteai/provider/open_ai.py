@@ -35,7 +35,7 @@ class OpenAIProvider(BaseProvider):
         self.client = OpenAI(api_key=self.api_key, base_url=base_url)
 
     def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
+        messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
         for message in messages:
             # logger.debug(f"{message=}")
             if message.get("image"):

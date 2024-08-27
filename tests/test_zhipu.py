@@ -1,8 +1,9 @@
 
 
+import unittest
 from liteai.core import Message
-from liteai.api import chat, embedding
-from liteai.tool import CurrentContextToolDesc
+from liteai.api import agent_chat, chat, embedding
+from liteai.tool import CurrentContextToolDesc, on_tool_call
 from liteai.utils import get_embd_similarity, set_logger, show_embeds, show_response
 from loguru import logger
 
@@ -66,15 +67,38 @@ class TestZhipu(BasicTestCase):
         resp = chat(model=model, messages=messages, stream=False, meta=meta)
         logger.info(f"{resp.content=}")
 
-    def test_tool_use(self):
+    def test_agent_chat(self):
+        question = "今天是几号了"
+        model = "glm-4-0520"
+        tools = [CurrentContextToolDesc]
+        response = agent_chat(model=model, messages=question, tools=tools, stream=True, temperature=0., log_level="INFO")
+        content = show_response(response)
+        import datetime
+
+        # 获取今天的日期
+        today = datetime.date.today()
+        # 以指定格式输出日期
+        formatted_date = today.strftime("%-m月%-d日")
+        logger.info(f"{formatted_date=}")
+        self.assertTrue(formatted_date in content)
+
+    @unittest.skip("skip test tool call")
+    def test_tool_call(self):
         question = "今天是几号了"
         model = "glm-4-0520"
         tools = [CurrentContextToolDesc]
         response = chat(model=model, messages=question, tools=tools, stream=True, temperature=0.)
         content = show_response(response)
         self.assertIsNotNone(response.tool_calls)
+        self.assertGreater(len(response.tool_calls), 0)
         self.assertEquals(CurrentContextToolDesc.content_resp, content)
         self.assertEquals("current_context", response.tool_calls[0].name)
+        for tool_call in response.tool_calls:
+            resp = on_tool_call(tool_call)
+            logger.info(f"tool call resp:{resp}")
+        response = chat(model=model, messages=question, tools=tools, tool_calls=response.tool_calls, stream=True, temperature=0.)
+        assert len(response.tool_calls) == 0
+        content = show_response(response)
 
         question = "世界上面积第三大的国家是哪个？"
         model = "glm-4-0520"

@@ -32,7 +32,7 @@ class QwenProvider(BaseProvider):
         dashscope.api_key = self.api_key
 
     def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        messages, tools, kwargs = super().pre_process(model, messages, tools, stream, **kwargs)
+        messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
         if stream:
             kwargs["incremental_output"] = True
         for message in messages:
