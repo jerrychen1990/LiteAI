@@ -89,7 +89,7 @@ def agent_chat(model: str | ModelCard, messages: List[dict | Message] | str, pro
                     stream=stream, temperature=temperature, top_p=top_p, **kwargs)
         tool_calls = resp.tool_calls
         for tool_call in tool_calls:
-            resp = on_tool_call(tool_call)
+            on_tool_call(tool_call)
         tool_calls = [e for e in tool_calls if e.tool_desc.is_inner and e.resp]
         logger.info(f"get {len(tool_calls)} inner tool calls")
         if not tool_calls:
