@@ -21,3 +21,4 @@ class TestXunfei(BasicTestCase):
         voice: Voice = file2voice(os.path.join(DATA_HOME, "hello.mp3"))
         asr_test = asr(voice=voice, model="xunfei_asr", app_id="9b5cc933")
         logger.info(f"{asr_test=}")
+        self.assertIn("天过得怎么样", asr_test)
