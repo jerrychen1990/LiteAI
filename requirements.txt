@@ -3,6 +3,7 @@ loguru
 pillow
 requests
 python-dotenv
+python-snippets
 
 
 # llm api

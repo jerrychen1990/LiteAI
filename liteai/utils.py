@@ -8,14 +8,14 @@
 '''
 import base64
 from io import BytesIO
-import os
-import sys
 from typing import Iterable, List
 from loguru import logger
 from PIL import Image
 import numpy as np
+from liteai.config import LITEAI_ENV
 from liteai.core import ModelResponse, ToolCall
 from snippets import batchify
+import snippets
 from snippets.utils import jdumps
 
 
@@ -48,15 +48,8 @@ def show_embeds(embds: List[List[float]] | List[float], sample_num=2, sample_siz
         logger.info(f"embd: {embds[:sample_size]}")
 
 
-def set_logger(module):
-    print(f"setting logger for {module=}")
-    if 0 in logger._core.handlers:
-        logger.remove(0)
-    UNILLM_ENV = os.environ.get("UNILLM_ENV", "DEV")
-
-    dev_fmt = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [<level>{level: <8}</level>] - <cyan>{file}</cyan>:<cyan>{line}</cyan>[<cyan>{name}</cyan>:<cyan>{function}</cyan>] - <level>{message}</level>"
-    if UNILLM_ENV.upper() == "DEV":
-        logger.add(sys.stdout, level="DEBUG", filter=lambda r: module in r["name"], format=dev_fmt, enqueue=True, colorize=True)
+def set_logger(module_name, **kwargs):
+    return snippets.set_logger(env=LITEAI_ENV, module_name=module_name, **kwargs)
 
 
 def image2base64(image_path):

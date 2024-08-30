@@ -67,6 +67,16 @@ def tts(text: str | Iterable[str], model: str | ModelCard,
 
 
 @can_set_level
+def asr(voice: Voice, model: str | ModelCard, provider: str = None, api_key: str = None,
+        **kwargs) -> str:
+    if isinstance(model, str):
+        model: ModelCard = get_modelcard(model_name=model, provider_key=provider)
+    provider: BaseProvider = get_provider(model=model, api_key=api_key)
+    voice = provider.asr(voice=voice, model=model, **kwargs)
+    return voice
+
+
+@can_set_level
 def embedding(texts: str | List[str], model: str | ModelCard,
               provider: str = None, api_key: str = None, norm=True, batch_size=8, **kwargs) -> List[List[float]] | List[float]:
     if isinstance(model, str):

@@ -11,6 +11,7 @@
 from typing import Any, Dict, List, Tuple
 
 from litellm import completion
+from loguru import logger
 
 from liteai.core import ModelCard, ModelResponse, Message, ToolDesc, Usage
 from liteai.provider.base import BaseProvider
@@ -36,7 +37,8 @@ from liteai.utils import acc_chunks, get_text_chunk
 
 class TGIProvider(BaseProvider):
     key = "tgi"
-    allow_kwargs = {"stream", "temperature", "top_p", "max_tokens"}
+    # TODO 更合理的控制参数
+    allow_kwargs = {"stream", "temperature", "top_p", "max_tokens", "message_show_type"}
 
     def __init__(self, base_url: str = None, **kwargs):
         self.base_url = base_url
@@ -48,14 +50,16 @@ class TGIProvider(BaseProvider):
         _input = ""
         for message in messages:
             # logger.debug(f"{message=}")
-            _input += f"<|{message['role']}|>\n{message['content']}"
-        _input += "<|assistant|>\n"
+            _input += f"<|{message['role']}|>{message['content']}"
+        _input += "<|assistant|>"
         messages = [dict(content=_input, role="user")]
         return messages
 
     def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
         messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
-        if "zhipu" in model or "glm" in model.name:
+        model_name = model.name.lower()
+        if "zhipu" in model_name or "glm" in model_name:
+            logger.debug("parse tgi input for zhipu model")
             messages = self._parse_zhipu_message(messages)
             kwargs.update({"stop":  ["<|endoftext|>", "<|user|>", "<|observation|>"]})
         return messages, tools, kwargs

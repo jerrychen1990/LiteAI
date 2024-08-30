@@ -21,8 +21,10 @@ from pydub import AudioSegment
 from pydub.playback import play
 
 
-def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str = None):
+def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str = None, overwrite=False):
     if file_path:
+        if os.path.exists(file_path) and not overwrite:
+            pass
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if isinstance(byte_stream, bytes):
             logger.debug(f"save voice to {file_path}")
@@ -33,9 +35,9 @@ def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str = None):
     return Voice(byte_stream=byte_stream, file_path=file_path)
 
 
-def file2voice(file: str, chunk_size=None):
+def file2voice(file_path: str, chunk_size=None):
     def byte_gen():
-        with open(file, "rb") as f:
+        with open(file_path, "rb") as f:
             while True:
                 chunk = f.read(chunk_size)
                 if not chunk:
@@ -43,7 +45,15 @@ def file2voice(file: str, chunk_size=None):
                 yield chunk
                 logger.debug(f"yielding chunk, with size {len(chunk)}")
     byte_stream = byte_gen()
-    return build_voice(byte_stream=byte_stream)
+    return build_voice(byte_stream=byte_stream, file_path=file_path, overwrite=False)
+
+
+def mp3to_wav(mp3_path: str, wav_path: str = None) -> str:
+    audio: AudioSegment = AudioSegment.from_mp3(mp3_path)
+    if not wav_path:
+        wav_path = mp3_path.replace(".mp3", ".wav")
+    audio.export(wav_path, format="wav")
+    return wav_path
 
 
 def dump_voice_stream(voice_stream: Iterable[bytes] | bytes, path: str):

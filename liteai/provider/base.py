@@ -23,10 +23,7 @@ class BaseProvider:
     api_key_env = None
 
     def __init__(self, api_key: str = None):
-        if api_key:
-            self.api_key = api_key
-        else:
-            self.api_key = os.environ.get(self.api_key_env)
+        self.api_key = api_key or os.environ.get(self.api_key_env)
         # logger.debug(f"{self.api_key=}")
         if not self.api_key and not getattr(self, "base_url"):
             raise ValueError(f"api_key is required or set {self.api_key_env} in environment variables or set base_url")
@@ -131,11 +128,17 @@ class BaseProvider:
         return response
 
     def show_calling_info(self, messages: List[Message], tools: List[dict], model: ModelCard, stream: bool, **kwargs):
-        show_message = messages
-        show_message = truncate_dict_strings(messages, 50, key_pattern=["url"])
-        message_str = ""
-        for idx, message in enumerate(show_message, start=1):
-            message_str += f"[{idx}].<{message['role']}>\n{message['content']}\n"
+        show_messages = messages
+        show_messages = truncate_dict_strings(messages, 50, key_pattern=["url"])
+
+        message_show_type = kwargs.get("message_show_type", "human")
+        logger.debug(f"message_show_type={message_show_type}")
+        if message_show_type == "origin":
+            message_str = str(show_messages)
+        else:
+            message_str = ""
+            for idx, message in enumerate(show_messages, start=1):
+                message_str += f"[{idx}].<{message['role']}>\n{message['content']}\n"
 
         calling_detail = f"calling {self.key} api with {model.name=}, {stream = }\nmessages=\n{message_str}"
 
@@ -148,6 +151,9 @@ class BaseProvider:
 
     def tts(self, text: str, model: ModelCard, stream: bool, **kwargs) -> Voice:
         raise Exception(f"provider {self.__class__.__name__} not support tts!")
+
+    def asr(self, voice: Voice, model: ModelCard, **kwargs) -> str:
+        raise Exception(f"provider {self.__class__.__name__} not support asr!")
 
     def embedding(self, texts: str | List[str], model: ModelCard, batch_size=8, **kwargs) -> List[List[float]] | List[float]:
         batch_func = multi_thread(work_num=batch_size, return_list=True)(self._embedding_single)

@@ -16,6 +16,7 @@ from liteai.provider.zhipu import ZhipuProvider
 from liteai.provider.qwen import QwenProvider
 from liteai.provider.open_ai import OpenAIProvider
 from liteai.provider.lite_llm import LiteLLMProvider
+from liteai.provider.xunfei import XunfeiProvider
 
 
 from liteai.provider.base import BaseProvider
@@ -23,7 +24,8 @@ from dotenv import load_dotenv
 load_dotenv()  # 默认会加载当前目录下的 .env 文件
 
 
-_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider, DoubaoProvider, MinimaxProvider, LiteLLMProvider, TGIProvider]
+_ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider,
+                                      DoubaoProvider, MinimaxProvider, LiteLLMProvider, TGIProvider, XunfeiProvider]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 
@@ -43,6 +45,8 @@ def get_provider_key(model_name: str) -> str:
         provider_name = DoubaoProvider.key
     elif "abab" in model_name or "speech-01" in model_name:
         provider_name = MinimaxProvider.key
+    elif "xunfei" in model_name:
+        provider_name = XunfeiProvider.key
     else:
         raise ValueError(f"Unsupported model: {model_name}")
     return provider_name

@@ -6,10 +6,11 @@
 - 增加embedding/agent等接口
 - 简化模型的输入输出信息，方便下游处理
 
-| 厂商                                                                                     | chat | 流式chat | Image输入 | Image输出 | Embedding | ToolUse | TTS |
-| ---------------------------------------------------------------------------------------- | ---- | -------- | --------- | --------- | --------- | ------- | --- |
-| [ZhipuAI](https://open.bigmodel.cn/dev/api#glm-4)                                           | ✅   | ✅       | ✅        |           | ✅        | ✅      |     |
-| [Qwen](https://help.aliyun.com/zh/dashscope/qwen-api-details)                               | ✅   | ✅       | ✅        |           |           |         |     |
-| [OpenAI](https://platform.openai.com/docs/guides/chat-completions)                          | ✅   | ✅       | ✅        |           |           |         |     |
-| [Doubao](https://www.volcengine.com/docs/82379/1263482)                                     | ✅   | ✅       |           |           |           |         |     |
-| [MiniMax](https://platform.minimaxi.com/document/Announcement?key=66701c5e1d57f38758d58180) | ✅   | ✅       |           |           |           |         | ✅  |
+| 厂商                                                                                     | chat | 流式chat | Image输入 | Image输出 | Embedding | ToolUse | TTS | ASR |
+| ---------------------------------------------------------------------------------------- | ---- | -------- | --------- | --------- | --------- | ------- | --- | --- |
+| [ZhipuAI](https://open.bigmodel.cn/dev/api#glm-4)                                           | ✅   | ✅       | ✅        |           | ✅        | ✅      |     |     |
+| [Qwen](https://help.aliyun.com/zh/dashscope/qwen-api-details)                               | ✅   | ✅       | ✅        |           |           |         |     |     |
+| [OpenAI](https://platform.openai.com/docs/guides/chat-completions)                          | ✅   | ✅       |           |           |           |         |     |     |
+| [Doubao](https://www.volcengine.com/docs/82379/1263482)                                     | ✅   | ✅       |           |           |           |         |     |     |
+| [MiniMax](https://platform.minimaxi.com/document/Announcement?key=66701c5e1d57f38758d58180) | ✅   | ✅       |           |           |           |         | ✅  |     |
+| [Xunfei](https://www.xfyun.cn/doc/asr/voicedictation/API.html)                              |      |          |           |           |           |         |     | ✅  |

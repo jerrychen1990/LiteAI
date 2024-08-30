@@ -7,3 +7,5 @@
 @Contact :   jerrychen1990@gmail.com
 '''
 
+
+# set_logger(LITEAI_ENV, __name__)
