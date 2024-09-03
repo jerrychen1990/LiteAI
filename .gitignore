@@ -167,3 +167,4 @@ test.py
 tests/dnll.mp3
 tests/hello.mp3
 data/hello.wav
+tmp/

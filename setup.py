@@ -46,5 +46,10 @@ if __name__ == "__main__":
         author_email='jerrychen1990@gmail.com',
         zip_safe=True,
         description='use ai lite',
-        long_description="use ai lite"
+        long_description="use ai lite",
+        entry_points={
+            'console_scripts': [
+                'liteai=liteai.cli:cli',
+            ],
+        },
     )

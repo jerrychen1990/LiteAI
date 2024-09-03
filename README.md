@@ -14,4 +14,26 @@
 | [Doubao](https://www.volcengine.com/docs/82379/1263482)                                     | ✅   | ✅       |           |           |           |         |     |     |
 | [MiniMax](https://platform.minimaxi.com/document/Announcement?key=66701c5e1d57f38758d58180) | ✅   | ✅       |           |           |           |         | ✅  |     |
 | [Xunfei](https://www.xfyun.cn/doc/asr/voicedictation/API.html)                              |      |          |           |           |           |         |     | ✅  |
-| [Ollama](https://ollama.com/)                              |   ✅    |   ✅        |           |           |           |         |     |   |
+| [Ollama](https://ollama.com/)                                                               | ✅   | ✅       |           |           |           |         |     |     |
+
+
+
+## Install
+```bash
+pip install -U liteai
+```
+
+## 批量请求模型
+```bash
+liteai batch \
+-d liteai/data/batch_test.jsonl \
+-m glm-4v \
+-w 2 \
+--input_column text \
+--image_column image \
+--image_dir liteai/data \
+--system "用英文回答" \
+--output_path output/bath_test_glm4v.xlsx
+```
+具体参数定义使用
+```bash liteai batch --help```查看

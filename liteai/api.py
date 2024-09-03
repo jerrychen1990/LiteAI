@@ -27,9 +27,8 @@ def can_set_level(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         log_level = kwargs.pop("log_level", None)
-        # logger.debug(f"set log level: {log_level}")
         if log_level:
-            with ChangeLogLevelContext(module_name="liteai", sink_type="stdout", level=log_level):
+            with ChangeLogLevelContext(module_name="liteai", sink_type="stdout", level=log_level.upper()):
                 return func(*args, **kwargs)
         else:
             return func(*args, **kwargs)
