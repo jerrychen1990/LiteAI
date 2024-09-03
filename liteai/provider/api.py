@@ -47,6 +47,8 @@ def get_provider_key(model_name: str) -> str:
         provider_name = MinimaxProvider.key
     elif "xunfei" in model_name:
         provider_name = XunfeiProvider.key
+    elif "ollama" in model_name:
+        provider_name = LiteLLMProvider.key
     else:
         raise ValueError(f"Unsupported model: {model_name}")
     return provider_name

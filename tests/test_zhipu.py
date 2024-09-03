@@ -16,17 +16,11 @@ class TestZhipu(BasicTestCase):
         set_logger(__name__)
         logger.info("start test job")
 
-    def basic_llm(self):
+    def test_basic_llm(self):
         super().basic_llm("glm-4-air")
 
     def test_vision_chat(self):
-        question = "这张图里有什么?"
-        image_path = "./data/Pikachu.png"
-        model = "glm-4v"
-        messages = [Message(role="user", content=question, image=image_path)]
-        resp = chat(model=model, messages=messages, stream=False, temperature=0.)
-        show_response(resp)
-        self.assertTrue("皮卡丘" in resp.content)
+        super().basic_vision("glm-4-plus")
 
     def test_not_support_system_model(self):
         system = "用英文回答我的问题, 80个单词以内"
@@ -69,7 +63,7 @@ class TestZhipu(BasicTestCase):
 
     def test_agent_chat(self):
         question = "今天是几号了"
-        model = "glm-4-0520"
+        model = "glm-4-plus"
         tools = [CurrentContextToolDesc]
         response = agent_chat(model=model, messages=question, tools=tools, stream=True, temperature=0., log_level="DEBUG")
         content = show_response(response)

@@ -18,6 +18,9 @@ ZHIPU_MODELS = [
     ModelCard(name="glm-4-airx", description="glm-4-airx", provider="zhipu"),
     ModelCard(name="glm-4-flash", description="glm-4-flash", provider="zhipu"),
     ModelCard(name="glm-4v", description="glm-4v", provider="zhipu", support_vision=True),
+    ModelCard(name="glm-4-plus", description="glm-4-plus", provider="zhipu", support_vision=False),
+    ModelCard(name="glm-4-long", description="glm-4-long", provider="zhipu", support_vision=False),
+
     ModelCard(name="emohaa", description="emohaa", provider="zhipu", support_vision=True),
 
     ModelCard(name="embedding-2", description="embedding-2", provider="zhipu", model_type=ModelType.EMBEDDING),
@@ -51,8 +54,9 @@ ALL_MODEL_MAP = {model.name: model for model in ALL_MODELS}
 
 
 def get_modelcard(model_name: str, **kwargs) -> ModelCard:
+    model_name = model_name.lower()
     if model_name not in ALL_MODEL_MAP:
-        logger.warning(f"get not defined model name:{model_name}")
+        logger.debug(f"get not defined model name:{model_name}")
         provider_key = kwargs.pop("provider_key", None)
         if not provider_key:
             provider_key = get_provider_key(model_name=model_name)

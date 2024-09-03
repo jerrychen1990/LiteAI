@@ -108,7 +108,7 @@ class BaseProvider:
         tool_calls = []
         tools2desc = {tool.name: tool for tool in tools}
         tool_content = ""
-        logger.debug(f"on tool call for {len(response.tool_calls)} tools")
+        # logger.debug(f"on tool call for {len(response.tool_calls)} tools")
         for tool_call in response.tool_calls:
             if tool_call.name not in tools2desc:
                 continue

@@ -8,16 +8,16 @@
 '''
 
 
-from typing import Any, List, Tuple
+from typing import Any, List
 
 from litellm import completion
 from loguru import logger
 
-from liteai.core import ModelResponse, Message, ToolDesc, Usage
+from liteai.core import ModelResponse, Message, Usage
 from liteai.provider.base import BaseProvider
 from snippets.utils import add_callback2gen
 
-from liteai.utils import acc_chunks, get_text_chunk, image2base64
+from liteai.utils import acc_chunks, get_text_chunk
 
 
 class LiteLLMProvider(BaseProvider):
@@ -29,30 +29,20 @@ class LiteLLMProvider(BaseProvider):
         self.base_url = base_url
         super().__init__(api_key=api_key)
 
-    def _support_system(self, model: str):
-        return True
-
-    def _get_custom_provider(self, model: str):
-        if "tgi" in model:
-            return "huggingface"
-
-    def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
-        for message in messages:
-            # logger.debug(f"{message=}")
-            if message.get("image"):
-                base64 = image2base64(message["image"])
-                message["content"] = [dict(type="text", text=message["content"]),
-                                      dict(type="image_url", image_url=dict(url="data:image/jpeg;base64," + base64))]
-                del message["image"]
-        return messages, tools, kwargs
-
-    def _parse_model(self, model: str) -> str:
-        if "tgi" in model:
-            return "huggingface/" + model
+    # def pre_process(self, model: str, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+    #     messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
+    #     for message in messages:
+    #         # logger.debug(f"{message=}")
+    #         if message.get("image"):
+    #             base64 = image2base64(message["image"])
+    #             message["content"] = [dict(type="text", text=message["content"]),
+    #                                   dict(type="image_url", image_url=dict(url="data:image/jpeg;base64," + base64))]
+    #             del message["image"]
+    #     return messages, tools, kwargs
 
     def _inner_complete_(self, model: str, messages: List[dict], stream: bool, tools, ** kwargs) -> Any:
-        model = self._parse_model(model)
+        # model = self._parse_model(model)
+        # logger.debug(f"{model=}")
         response = completion(
             model=model,
             messages=messages,

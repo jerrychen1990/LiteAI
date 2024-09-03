@@ -13,5 +13,5 @@ class TestDoubao(BasicTestCase):
         set_logger(__name__)
         logger.info("start doubao test job")
 
-    def basic_llm(self):
+    def test_basic_llm(self):
         super().basic_llm("doubao-lite-4k")

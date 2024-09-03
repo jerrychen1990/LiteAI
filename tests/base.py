@@ -32,3 +32,11 @@ class BasicTestCase(unittest.TestCase):
         content = show_response(response)
         # self.assertIsNotNone(response.usage)
         self.assertIn("Canada", content)
+
+    def basic_vision(self, model: str):
+        question = "这张图里有什么?"
+        image_path = "./data/Pikachu.png"
+        messages = [Message(role="user", content=question, image=image_path)]
+        resp = chat(model=model, messages=messages, stream=False, temperature=0.)
+        show_response(resp)
+        self.assertTrue("皮卡丘" in resp.content)

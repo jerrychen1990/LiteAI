@@ -13,7 +13,7 @@ class TestQwen(BasicTestCase):
         set_logger(__name__)
         logger.info("start test qwen job")
 
-    def basic_llm(self):
+    def test_basic_llm(self):
         super().basic_llm("qwen-turbo")
 
     def test_vision_chat(self):
