@@ -20,7 +20,7 @@ class TestZhipu(BasicTestCase):
         super().basic_llm("glm-4-air")
 
     def test_vision_chat(self):
-        super().basic_vision("glm-4-plus")
+        super().basic_vision("glm-4v-plus")
 
     def test_not_support_system_model(self):
         system = "用英文回答我的问题, 80个单词以内"

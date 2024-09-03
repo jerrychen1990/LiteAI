@@ -14,3 +14,4 @@
 | [Doubao](https://www.volcengine.com/docs/82379/1263482)                                     | ✅   | ✅       |           |           |           |         |     |     |
 | [MiniMax](https://platform.minimaxi.com/document/Announcement?key=66701c5e1d57f38758d58180) | ✅   | ✅       |           |           |           |         | ✅  |     |
 | [Xunfei](https://www.xfyun.cn/doc/asr/voicedictation/API.html)                              |      |          |           |           |           |         |     | ✅  |
+| [Ollama](https://ollama.com/)                              |   ✅    |   ✅        |           |           |           |         |     |   |
