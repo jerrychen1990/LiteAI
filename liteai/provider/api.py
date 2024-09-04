@@ -17,6 +17,7 @@ from liteai.provider.qwen import QwenProvider
 from liteai.provider.open_ai import OpenAIProvider
 from liteai.provider.lite_llm import LiteLLMProvider
 from liteai.provider.xunfei import XunfeiProvider
+from liteai.provider.siliconflow import SiliconFlowProvider
 
 
 from liteai.provider.base import BaseProvider
@@ -25,7 +26,7 @@ load_dotenv()  # 默认会加载当前目录下的 .env 文件
 
 
 _ALL_PROVIDERS: List[BaseProvider] = [ZhipuProvider, QwenProvider, OpenAIProvider,
-                                      DoubaoProvider, MinimaxProvider, LiteLLMProvider, TGIProvider, XunfeiProvider]
+                                      DoubaoProvider, MinimaxProvider, LiteLLMProvider, TGIProvider, XunfeiProvider, SiliconFlowProvider]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
 
@@ -49,6 +50,8 @@ def get_provider_key(model_name: str) -> str:
         provider_name = XunfeiProvider.key
     elif "ollama" in model_name:
         provider_name = LiteLLMProvider.key
+    elif "deepseek" in model_name:
+        provider_name = SiliconFlowProvider.key
     else:
         raise ValueError(f"Unsupported model: {model_name}")
     return provider_name

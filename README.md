@@ -15,6 +15,7 @@
 | [MiniMax](https://platform.minimaxi.com/document/Announcement?key=66701c5e1d57f38758d58180) | ✅   | ✅       |           |           |           |         | ✅  |     |
 | [Xunfei](https://www.xfyun.cn/doc/asr/voicedictation/API.html)                              |      |          |           |           |           |         |     | ✅  |
 | [Ollama](https://ollama.com/)                                                               | ✅   | ✅       |           |           |           |         |     |     |
+| [SiliconFlow](https://docs.siliconflow.cn/reference)                                                               | ✅   | ✅       |           |           |           |         |     |     |
 
 
 

@@ -84,6 +84,7 @@ def truncate_dict_strings(data: dict, max_length: int, key_pattern=None) -> dict
 
 
 def get_text_chunk(chunk):
+    # logger.debug(f"{type(chunk)=}, {chunk=}")
     choices = chunk.choices
     if choices:
         choice = choices[0]
