@@ -168,3 +168,4 @@ tests/dnll.mp3
 tests/hello.mp3
 data/hello.wav
 tmp/
+test_yiguan.py

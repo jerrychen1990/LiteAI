@@ -9,16 +9,18 @@
 
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional
-from pydantic import BaseModel, Field
+from litellm import ConfigDict
+from pydantic import Field
 from typing import Optional
 import warnings
+
+import pydantic
 
 warnings.filterwarnings("ignore", message=".*protected_namespaces.*")
 
 
-class BaseModel(BaseModel):
-    class MyConfig:
-        protected_namespaces = ()
+class BaseModel(pydantic.BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
 
 
 class Message(BaseModel):
