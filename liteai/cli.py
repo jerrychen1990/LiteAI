@@ -39,8 +39,9 @@ def cli():
 @click.option("--top_p", default=0.7, help="top_p")
 @click.option("--log_level", default="INFO", help="日志级别")
 @click.option("--output_path", help="输出文件路径", default=None)
+@click.option("--api_key", default=None, help="模型对应的api_key")
 def batch(data_path: str, model: str, work_num=4, input_column="input", image_column: str = None, image_dir=None,
-          overwrite: True = False, output_path: str = None, system: str = None, temperature=0.7, top_p=.7, log_level="INFO"):
+          overwrite: True = False, output_path: str = None, system: str = None, temperature=0.7, top_p=.7, log_level="INFO", api_key=None):
     """
     批量处理数据
     """
@@ -59,7 +60,7 @@ def batch(data_path: str, model: str, work_num=4, input_column="input", image_co
             messages.insert(0, Message(role="system", content=system))
         # logger.info(f"{log_level=}")
 
-        resp = chat(model=model, messages=messages, stream=False, top_p=top_p, temperature=temperature)
+        resp = chat(model=model, messages=messages, stream=False, top_p=top_p, temperature=temperature, api_key=api_key)
         item[f"{model}_response"] = resp.content
 
     with ChangeLogLevelContext(module_name="liteai", sink_type="stdout", level=log_level.upper()):

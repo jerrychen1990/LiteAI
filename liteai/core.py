@@ -76,7 +76,7 @@ class ToolCall(BaseModel):
     tool_desc: Optional[ToolDesc] = Field(description="工具描述", default=None)
     parameters: Dict[str, Any] = Field(description="工具调用的参数")
     extra_info: dict = Field(description="额外的信息", default=dict())
-    resp: Dict = Field(description="工具执行的返回结果,为执行时为None", default=None)
+    resp: Optional[Dict] = Field(description="工具执行的返回结果,为执行时为None", default=None)
 
     def to_markdown(self):
         return f"**[调用工具]**: {self.name} **[参数]**: {self.parameters} **[返回结果]**: {self.resp}"
