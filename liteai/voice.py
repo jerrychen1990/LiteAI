@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/08/06 14:24:26
 @Author  :   ChenHao
 @Description  :   语音处理相关函数
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
+
 import io
 import itertools
 import os
 import threading
 import time
-from typing import Iterable
+from collections.abc import Iterable
+
 from loguru import logger
+from pydub import AudioSegment
+from pydub.playback import play
+from snippets.utils import add_callback2gen
+
 from liteai.config import DEFAULT_VOICE_CHUNK_SIZE, MAX_PLAY_SECONDS
 from liteai.core import Voice
-from snippets.utils import add_callback2gen
-from pydub import AudioSegment
-
-from pydub.playback import play
 
 
 def build_voice(byte_stream: bytes | Iterable[bytes], file_path: str = None, overwrite=False):
@@ -44,6 +46,7 @@ def file2voice(file_path: str, chunk_size=None):
                     return
                 yield chunk
                 logger.debug(f"yielding chunk, with size {len(chunk)}")
+
     byte_stream = byte_gen()
     return build_voice(byte_stream=byte_stream, file_path=file_path, overwrite=False)
 
@@ -63,7 +66,7 @@ def dump_voice_stream(voice_stream: Iterable[bytes] | bytes, path: str):
             f.write(voice_stream)
         else:
             for chunk in voice_stream:
-                if chunk is not None and chunk != b'\n':
+                if chunk is not None and chunk != b"\n":
                     decoded_hex = chunk
                     f.write(decoded_hex)
 
@@ -80,12 +83,11 @@ def play_file(file_path: str, max_seconds: int = None):
         audio_bytes = f.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
     if max_seconds:
-        audio = audio[:max_seconds * 1000]
+        audio = audio[: max_seconds * 1000]
     play(audio)
 
 
 def play_voice(voice: Voice, buffer_size=DEFAULT_VOICE_CHUNK_SIZE, max_seconds=None):
-
     logger.debug(f"{type(voice.byte_stream)=}, {voice.file_path=}")
 
     if voice.file_path and os.path.exists(voice.file_path):
@@ -96,7 +98,7 @@ def play_voice(voice: Voice, buffer_size=DEFAULT_VOICE_CHUNK_SIZE, max_seconds=N
         play_bytes(play_stream, buffer_size, max_seconds=max_seconds)
 
 
-def play_bytes(byte_stream: Iterable[bytes], min_buffer_size=8192*10, max_seconds=None):
+def play_bytes(byte_stream: Iterable[bytes], min_buffer_size=8192 * 10, max_seconds=None):
     audio_buffer = io.BytesIO()
     producer_finished = threading.Event()
     offset = 0
@@ -121,7 +123,7 @@ def play_bytes(byte_stream: Iterable[bytes], min_buffer_size=8192*10, max_second
             if not check_min_size or raw_size >= min_buffer_size:
                 audio_buffer.seek(offset)
                 audio_segment = AudioSegment.from_file(audio_buffer, format="mp3")
-                audio_segment = audio_segment[:seconds_left * 1000]
+                audio_segment = audio_segment[: seconds_left * 1000]
                 seconds_left -= len(audio_segment) / 1000
                 duration = len(audio_segment)
                 logger.debug(f"play audio segment with size:{len(audio_segment.raw_data)}, {raw_size=}, duration:{duration}")

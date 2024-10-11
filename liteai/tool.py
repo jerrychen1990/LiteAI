@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/08/12 19:54:53
 @Author  :   ChenHao
 @Description  :   工具类
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
 
-
-from typing import Any, Callable
+from collections.abc import Callable
 
 from litellm import Field
 from loguru import logger
@@ -21,7 +20,7 @@ class Tool(BaseModel):
     tool_desc: ToolDesc = Field(..., description="工具描述")
     callable: Callable = Field(..., description="工具执行函数")
 
-    def execute(self, *args, **kwargs) -> Any:
+    def execute(self, *args, **kwargs) -> any:
         logger.debug(f"executing tool:{self.tool_desc.name} with function:{self.callable}, with args:{args}, kwargs:{kwargs}")
         return self.callable(*args, **kwargs)
 
@@ -29,7 +28,8 @@ class Tool(BaseModel):
 def get_current_context(time_type: str):
     import datetime
     import time
-    fmt = '%Y-%m-%d %H:%M:%S' if time_type == 'datetime' else '%Y-%m-%d'
+
+    fmt = "%Y-%m-%d %H:%M:%S" if time_type == "datetime" else "%Y-%m-%d"
     current_time = datetime.datetime.fromtimestamp(time.time()).strftime(fmt)
     today = datetime.date.today()
     weekday = today.weekday()
@@ -52,11 +52,16 @@ def on_tool_call(tool_call: ToolCall):
     return tool_call.resp
 
 
-CurrentContextToolDesc = ToolDesc(name="current_context", description="获取当前环境，包括日期、星期几、当前时间",
-                                  parameters=[Parameter(name="time_type", description="时间格式，分为两种datetime:精确到秒, date:精确到日",
-                                                        type="string", required=True)],
-                                  content_resp="正在帮您获取当前时间...",
-                                  is_local=True, is_inner=True)
+CurrentContextToolDesc = ToolDesc(
+    name="current_context",
+    description="获取当前环境，包括日期、星期几、当前时间",
+    parameters=[
+        Parameter(name="time_type", description="时间格式，分为两种datetime:精确到秒, date:精确到日", type="string", required=True)
+    ],
+    content_resp="正在帮您获取当前时间...",
+    is_local=True,
+    is_inner=True,
+)
 TOOL_DESCS = [CurrentContextToolDesc]
 NAME2TOOL_DESC = {tool_desc.name: tool_desc for tool_desc in TOOL_DESCS}
 

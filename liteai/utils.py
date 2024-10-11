@@ -1,22 +1,25 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/06/25 17:44:35
 @Author  :   ChenHao
-@Description  :   
+@Description  :
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
+
 import base64
+from collections.abc import Iterable
 from io import BytesIO
-from typing import Iterable, List
+
+import numpy as np
+import snippets
 from loguru import logger
 from PIL import Image
-import numpy as np
+from snippets import batchify
+from snippets.utils import jdumps
+
 from liteai.config import LITEAI_ENV
 from liteai.core import ModelResponse, ToolCall
-from snippets import batchify
-import snippets
-from snippets.utils import jdumps
 
 
 def show_response(response: ModelResponse, batch_size=10):
@@ -26,7 +29,7 @@ def show_response(response: ModelResponse, batch_size=10):
             logger.info(f"tool_call: {jdumps(tool_call.model_dump())}")
 
     if isinstance(content, str):
-        logger.info("content:\n"+content)
+        logger.info("content:\n" + content)
         return content
     else:
         logger.info("stream content:")
@@ -38,7 +41,7 @@ def show_response(response: ModelResponse, batch_size=10):
         return acc
 
 
-def show_embeds(embds: List[List[float]] | List[float], sample_num=2, sample_size=4):
+def show_embeds(embds: list[list[float]] | list[float], sample_num=2, sample_size=4):
     if isinstance(embds[0], list):
         logger.info(f"embd dim:{len(embds[0])}")
         for i, embd in enumerate(embds[:sample_num]):
@@ -68,7 +71,7 @@ def image2base64(image_path):
 
 def truncate_dict_strings(data: dict, max_length: int, key_pattern=None) -> dict:
     def truncate_string(s):
-        return s if len(s) <= max_length else s[:max_length//2] + '...' + s[-max_length//2:]
+        return s if len(s) <= max_length else s[: max_length // 2] + "..." + s[-max_length // 2 :]
 
     def process_item(key, item):
         if isinstance(item, dict):
@@ -113,7 +116,7 @@ def acc_chunks(acc):
     logger.debug(f"model generate answer:{resp_msg}")
 
 
-def get_embd_similarity(embd1: List[float], embd2: List[float]):
+def get_embd_similarity(embd1: list[float], embd2: list[float]):
     embd1 = np.array(embd1)
     embd2 = np.array(embd2)
     sim = np.dot(embd1, embd2) / (np.linalg.norm(embd1) * np.linalg.norm(embd2))
@@ -122,8 +125,8 @@ def get_embd_similarity(embd1: List[float], embd2: List[float]):
 
 if __name__ == "__main__":
     data = {
-        'name': 'Pikachu',
-        'description': 'Pikachu is an Electric-type Pokémon introduced in Generation I.',
-        'abilities': ['Static', 'Lightning Rod']
+        "name": "Pikachu",
+        "description": "Pikachu is an Electric-type Pokémon introduced in Generation I.",
+        "abilities": ["Static", "Lightning Rod"],
     }
     print(truncate_dict_strings(data, 20))

@@ -1,9 +1,6 @@
-
-from liteai.core import Message
-from liteai.api import chat
-from liteai.utils import set_logger, show_response
 from loguru import logger
 
+from liteai.utils import set_logger
 from tests.base import BasicTestCase
 
 

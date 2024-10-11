@@ -1,9 +1,8 @@
-
-from liteai.core import Message
-from liteai.api import chat
-from liteai.utils import set_logger, show_response
 from loguru import logger
 
+from liteai.api import chat
+from liteai.core import Message
+from liteai.utils import set_logger, show_response
 from tests.base import BasicTestCase
 
 
@@ -21,5 +20,5 @@ class TestQwen(BasicTestCase):
         image_path = "./data/Pikachu.png"
         model = "qwen-vl-plus"
         messages = [Message(role="user", content=question, image=image_path)]
-        resp = chat(model=model, messages=messages, stream=False, temperature=0.)
+        resp = chat(model=model, messages=messages, stream=False, temperature=0.0)
         show_response(resp)

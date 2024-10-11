@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/07/31 15:50:13
 @Author  :   ChenHao
-@Description  :   
+@Description  :
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
 
-from abc import abstractmethod
 import os
-from typing import Any, List, Tuple
+from abc import abstractmethod
+
 from loguru import logger
-from typing import Any, List
+from snippets import jdumps, multi_thread, retry
+
 from liteai.core import Message, ModelCard, ModelResponse, ToolCall, ToolDesc, Voice
 from liteai.utils import truncate_dict_strings
-from snippets import jdumps, retry, multi_thread
 
 
 class BaseProvider:
@@ -23,13 +23,14 @@ class BaseProvider:
     api_key_env = None
 
     def __init__(self, api_key: str = None):
-        self.api_key = api_key or os.environ.get(self.api_key_env)
+        self.api_key = api_key or os.environ.get(self.api_key_env, "")
         # logger.debug(f"{self.api_key=}")
         if not self.api_key and not getattr(self, "base_url"):
             raise ValueError(f"api_key is required or set {self.api_key_env} in environment variables or set base_url")
 
-    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc],
-                    tool_calls: List[ToolCall], stream: str, **kwargs) -> Tuple[List[dict], List[dict], dict]:
+    def pre_process(
+        self, model: ModelCard, messages: list[Message], tools: list[ToolDesc], tool_calls: list[ToolCall], stream: str, **kwargs
+    ) -> tuple[list[dict], list[dict], dict]:
         new_kwargs = dict()
         ignore_kwargs = dict()
         # logger.debug(f"{self.allow_kwargs=}")
@@ -64,7 +65,7 @@ class BaseProvider:
 
         return messages, tools, new_kwargs
 
-    def _handle_system(self, model: ModelCard, messages: List[dict], **kwargs) -> List[dict]:
+    def _handle_system(self, model: ModelCard, messages: list[dict], **kwargs) -> list[dict]:
         system = None
         last_user_message = None
         for message in messages:
@@ -88,12 +89,15 @@ class BaseProvider:
         raise NotImplementedError
 
     @abstractmethod
-    def _inner_complete_(self, model: str, messages: List[dict], tools: List[ToolDesc], stream: bool, **kwargs) -> Any:
+    def _inner_complete_(self, model: str, messages: list[dict], tools: list[ToolDesc], stream: bool, **kwargs) -> any:
         raise NotImplementedError
 
-    def complete(self, model: ModelCard, messages: List[Message], stream: bool,
-                 tools: List[ToolDesc] = [], tool_calls: List[ToolCall] = [], **kwargs) -> ModelResponse:
-        messages, dict_tools, kwargs = self.pre_process(model=model, messages=messages, tools=tools, stream=stream, tool_calls=tool_calls, ** kwargs)
+    def complete(
+        self, model: ModelCard, messages: list[Message], stream: bool, tools: list[ToolDesc] = [], tool_calls: list[ToolCall] = [], **kwargs
+    ) -> ModelResponse:
+        messages, dict_tools, kwargs = self.pre_process(
+            model=model, messages=messages, tools=tools, stream=stream, tool_calls=tool_calls, **kwargs
+        )
 
         self.show_calling_info(messages, dict_tools, model, stream, **kwargs)
         response = self._inner_complete_(model.name, messages, stream=stream, tools=dict_tools, **kwargs)
@@ -104,7 +108,7 @@ class BaseProvider:
         resp = self.on_tool_call(resp, tools)
         return resp
 
-    def on_tool_call(self, response: ModelResponse, tools: List[ToolDesc]) -> ModelResponse:
+    def on_tool_call(self, response: ModelResponse, tools: list[ToolDesc]) -> ModelResponse:
         tool_calls = []
         tools2desc = {tool.name: tool for tool in tools}
         tool_content = ""
@@ -117,8 +121,8 @@ class BaseProvider:
             if tool_desc.content_resp:
                 tool_content = tool_desc.content_resp
             # if tool_desc.is_inner:
-                # logger.debug(f"calling inner tool {tool_call.name}")
-                # tool_call.resp = tool_desc.func(**tool_call.parameters)
+            # logger.debug(f"calling inner tool {tool_call.name}")
+            # tool_call.resp = tool_desc.func(**tool_call.parameters)
             tool_calls.append(tool_call)
         response.tool_calls = tool_calls
         logger.debug(f"get {len(tool_calls)} valid tool calls")
@@ -127,7 +131,7 @@ class BaseProvider:
             response.content = tool_content if isinstance(response.content, str) else (tool_content)
         return response
 
-    def show_calling_info(self, messages: List[Message], tools: List[dict], model: ModelCard, stream: bool, **kwargs):
+    def show_calling_info(self, messages: list[Message], tools: list[dict], model: ModelCard, stream: bool, **kwargs):
         show_messages = messages
         show_messages = truncate_dict_strings(messages, 50, key_pattern=["url"])
 
@@ -155,14 +159,14 @@ class BaseProvider:
     def asr(self, voice: Voice, model: ModelCard, **kwargs) -> str:
         raise Exception(f"provider {self.__class__.__name__} not support asr!")
 
-    def embedding(self, texts: str | List[str], model: ModelCard, batch_size=8, **kwargs) -> List[List[float]] | List[float]:
+    def embedding(self, texts: str | list[str], model: ModelCard, batch_size=8, **kwargs) -> list[list[float]] | list[float]:
         batch_func = multi_thread(work_num=batch_size, return_list=True)(self._embedding_single)
         return batch_func(data=texts, model=model, **kwargs)
 
-    def _embedding_single_try(self, text: str, model: str, **kwargs) -> List[float]:
+    def _embedding_single_try(self, text: str, model: str, **kwargs) -> list[float]:
         raise Exception(f"provider {self.__class__.__name__} not support embedding!")
 
-    def _embedding_single(self, text: str, model: ModelCard, retry_num=2, wait_time=(1, 2), **kwargs) -> List[float]:
+    def _embedding_single(self, text: str, model: ModelCard, retry_num=2, wait_time=(1, 2), **kwargs) -> list[float]:
         if retry_num:
             attempt = retry(retry_num=retry_num, wait_time=wait_time)(self._embedding_single_try)
         else:

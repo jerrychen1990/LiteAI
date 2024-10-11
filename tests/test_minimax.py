@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/07/31 15:22:33
 @Author  :   ChenHao
 @Description  : OpenAI测试
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
 
 import os
 
-from liteai.core import Voice
-from liteai.api import tts
-from liteai.utils import set_logger
-from liteai.voice import play_voice
 from loguru import logger
 
+from liteai.api import tts
+from liteai.core import Voice
+from liteai.utils import set_logger
+from liteai.voice import play_voice
 from tests.base import BasicTestCase
 
 

@@ -1,12 +1,11 @@
-
-
 import os
-from liteai.config import DATA_HOME
-from liteai.core import Voice
-from liteai.api import asr
-from liteai.utils import set_logger
+
 from loguru import logger
 
+from liteai.api import asr
+from liteai.config import DATA_HOME
+from liteai.core import Voice
+from liteai.utils import set_logger
 from liteai.voice import file2voice
 from tests.base import BasicTestCase
 

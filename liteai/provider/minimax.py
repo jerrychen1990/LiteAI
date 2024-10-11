@@ -1,23 +1,22 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/08/06 10:05:51
 @Author  :   ChenHao
-@Description  :   
+@Description  :
 @Contact :   jerrychen1990@gmail.com
-'''
-
+"""
 
 import json
 import os
-from typing import List
-from litellm import Tuple
-from loguru import logger
+
 import requests
+from loguru import logger
+from snippets import jdumps
+
 from liteai.core import Message, ModelCard, ToolDesc, Voice
 from liteai.provider.open_ai import OpenAIProvider
 from liteai.voice import build_voice
-from snippets import jdumps
 
 
 class MinimaxProvider(OpenAIProvider):
@@ -28,16 +27,27 @@ class MinimaxProvider(OpenAIProvider):
     def __init__(self, api_key: str = None, **kwargs):
         super().__init__(api_key=api_key, base_url="https://api.minimax.chat/v1")
 
-    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
-        if kwargs.get("temperature") == 0.:
+    def pre_process(
+        self, model: ModelCard, messages: list[Message], tools: list[ToolDesc], stream: bool, **kwargs
+    ) -> tuple[list[dict], dict]:
+        if kwargs.get("temperature") == 0.0:
             logger.debug(f"provider {self.key} not support temperature=0, setting temperature to 0.0001")
             kwargs["temperature"] = 0.0001
         messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
         return messages, tools, kwargs
 
-    def tts(self, text: str, model: ModelCard, version="t2a_v2", tgt_path: str = None,
-            append=False, stream=False, voice_id="tianxin_xiaoling", speed=1, pitch=0) -> Voice:
-
+    def tts(
+        self,
+        text: str,
+        model: ModelCard,
+        version="t2a_v2",
+        tgt_path: str = None,
+        append=False,
+        stream=False,
+        voice_id="tianxin_xiaoling",
+        speed=1,
+        pitch=0,
+    ) -> Voice:
         group_id = os.environ["MINIMAX_GROUP_ID"]
         url = f"https://api.minimax.chat/v1/{version}?GroupId={group_id}"
 
@@ -45,23 +55,10 @@ class MinimaxProvider(OpenAIProvider):
             "model": model.name,
             "text": text,
             "stream": stream,
-            "voice_setting": {
-                "voice_id": voice_id,
-                "speed": speed,
-                "vol": 1,
-                "pitch": pitch
-            },
-            "audio_setting": {
-                "sample_rate": 32000,
-                "bitrate": 128000,
-                "format": "mp3",
-                "channel": 1
-            }
+            "voice_setting": {"voice_id": voice_id, "speed": speed, "vol": 1, "pitch": pitch},
+            "audio_setting": {"sample_rate": 32000, "bitrate": 128000, "format": "mp3", "channel": 1},
         }
-        headers = {
-            'Authorization': f'Bearer {self.api_key}',
-            'Content-Type': 'application/json'
-        }
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         logger.debug(f"calling minimax tts url:{url} with payload:\n{jdumps(payload)}")
         response = requests.request("POST", url, headers=headers, stream=stream, json=payload)
         logger.debug(f"{response.status_code=}")
@@ -71,16 +68,18 @@ class MinimaxProvider(OpenAIProvider):
             if "data" not in data:
                 logger.exception(data)
                 raise Exception(data)
-            byte_stream = bytes.fromhex(data['data']['audio'])
+            byte_stream = bytes.fromhex(data["data"]["audio"])
         else:
+
             def _get_bytes(chunk):
                 if chunk:
-                    if chunk[:5] == b'data:':
+                    if chunk[:5] == b"data:":
                         data = json.loads(chunk[5:])
                         if "data" in data and "extra_info" not in data:
                             if "audio" in data["data"]:
-                                audio = data["data"]['audio']
+                                audio = data["data"]["audio"]
                                 return bytes.fromhex(audio)
+
             byte_stream = (e for e in (_get_bytes(chunk) for chunk in response.raw) if e)
         voice = build_voice(byte_stream=byte_stream, file_path=tgt_path)
         return voice

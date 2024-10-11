@@ -1,28 +1,23 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/09/04 14:21:52
 @Author  :   ChenHao
 @Description  :   硅基流动
 @Contact :   jerrychen1990@gmail.com
-'''
-
+"""
 
 import json
+
+import requests
 from dotenv import load_dotenv
 from loguru import logger
-import requests
-from typing import Any, List
-
-
-from liteai.core import ModelCard, ModelResponse, Message, Usage
-from liteai.provider.base import BaseProvider
+from snippets import add_callback2gen
 from snippets.logs import set_logger
 from snippets.utils import add_callback2gen
 
-
-from snippets import add_callback2gen
-
+from liteai.core import Message, ModelCard, ModelResponse, Usage
+from liteai.provider.base import BaseProvider
 from liteai.utils import acc_chunks, show_response
 
 
@@ -34,24 +29,15 @@ class SiliconFlowProvider(BaseProvider):
     def __init__(self, api_key: str = None, base_url: str = None):
         super().__init__(api_key=api_key)
 
-    def _inner_complete_(self, model: str, messages: List[dict], stream: bool, tools: List[dict], ** kwargs) -> Any:
+    def _inner_complete_(self, model: str, messages: list[dict], stream: bool, tools: list[dict], **kwargs) -> any:
         url = "https://api.siliconflow.cn/v1/chat/completions"
-        payload = {
-            "model": model,
-            "messages": messages,
-            "stream": stream,
-            **kwargs
-        }
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-            "authorization": f"Bearer {self.api_key}"
-        }
+        payload = {"model": model, "messages": messages, "stream": stream, **kwargs}
+        headers = {"accept": "application/json", "content-type": "application/json", "authorization": f"Bearer {self.api_key}"}
         response = requests.post(url, json=payload, headers=headers, stream=stream)
         response.raise_for_status()
         if stream:
             lines = (e.decode("utf8") for e in response.iter_lines())
-            lines = (e[len("data:"):] for e in lines if e)
+            lines = (e[len("data:") :] for e in lines if e)
             # lines = list(lines)
             # for line in lines:
             #     logger.debug(f"{line=}")

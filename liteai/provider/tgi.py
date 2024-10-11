@@ -1,27 +1,20 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/06/25 18:52:00
 @Author  :   ChenHao
-@Description  :   
+@Description  :
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
 
-
-from typing import Any, Dict, List, Tuple
 
 from litellm import completion
 from loguru import logger
-
-from liteai.core import ModelCard, ModelResponse, Message, ToolDesc, Usage
-from liteai.provider.base import BaseProvider
 from snippets.utils import add_callback2gen
 
-
-from litellm import completion
-
+from liteai.core import Message, ModelCard, ModelResponse, ToolDesc, Usage
+from liteai.provider.base import BaseProvider
 from liteai.utils import acc_chunks, get_text_chunk
-
 
 # class ZhipuTGILLM(CustomLLM):
 #     pass
@@ -46,7 +39,7 @@ class TGIProvider(BaseProvider):
     def _support_system(self, model: str):
         return True
 
-    def _parse_zhipu_message(self, messages: List[Message]) -> List[Dict]:
+    def _parse_zhipu_message(self, messages: list[Message]) -> list[dict]:
         _input = ""
         for message in messages:
             # logger.debug(f"{message=}")
@@ -55,28 +48,24 @@ class TGIProvider(BaseProvider):
         messages = [dict(content=_input, role="user")]
         return messages
 
-    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], dict]:
+    def pre_process(
+        self, model: ModelCard, messages: list[Message], tools: list[ToolDesc], stream: bool, **kwargs
+    ) -> tuple[list[dict], dict]:
         messages, tools, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
         model_name = model.name.lower()
         if "zhipu" in model_name or "glm" in model_name:
             logger.debug("parse tgi input for zhipu model")
             messages = self._parse_zhipu_message(messages)
-            kwargs.update({"stop":  ["<|endoftext|>", "<|user|>", "<|observation|>"]})
+            kwargs.update({"stop": ["<|endoftext|>", "<|user|>", "<|observation|>"]})
         return messages, tools, kwargs
 
     def _parse_model(self, model: str) -> str:
         return "huggingface/" + model
 
-    def _inner_complete_(self, model: str, messages: List[dict], stream: bool, tools, ** kwargs) -> Any:
+    def _inner_complete_(self, model: str, messages: list[dict], stream: bool, tools, **kwargs) -> any:
         model = self._parse_model(model)
         api_base = self.base_url + "/generate" if not stream else self.base_url + "/generate_stream"
-        response = completion(
-            model=model,
-            messages=messages,
-            api_base=api_base,
-            stream=stream,
-            **kwargs
-        )
+        response = completion(model=model, messages=messages, api_base=api_base, stream=stream, **kwargs)
         return response
 
     def post_process(self, response, **kwargs) -> ModelResponse:
@@ -85,7 +74,7 @@ class TGIProvider(BaseProvider):
         stop = kwargs.get("stop", [])
         for s in stop:
             if s in content:
-                content = content[:content.index(s)]
+                content = content[: content.index(s)]
         usage = Usage(**response.usage.model_dump())
 
         return ModelResponse(content=content, usage=usage)

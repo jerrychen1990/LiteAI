@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/08/21 18:22:06
 @Author  :   ChenHao
-@Description  :   
+@Description  :
 @Contact :   jerrychen1990@gmail.com
-'''
-
+"""
 
 from loguru import logger
-from liteai.provider.api import get_provider_key
+
 from liteai.core import ModelCard, ModelType
+from liteai.provider.api import get_provider_key
 
 ZHIPU_MODELS = [
     ModelCard(name="glm-4-0520", description="glm-4-0520", provider="zhipu"),
@@ -20,9 +20,7 @@ ZHIPU_MODELS = [
     ModelCard(name="glm-4v", description="glm-4v", provider="zhipu", support_vision=True),
     ModelCard(name="glm-4-plus", description="glm-4-plus", provider="zhipu", support_vision=False),
     ModelCard(name="glm-4-long", description="glm-4-long", provider="zhipu", support_vision=False),
-
     ModelCard(name="emohaa", description="emohaa", provider="zhipu", support_vision=True),
-
     ModelCard(name="embedding-2", description="embedding-2", provider="zhipu", model_type=ModelType.EMBEDDING),
     ModelCard(name="embedding-3", description="embedding-2", provider="zhipu", model_type=ModelType.EMBEDDING),
 ]
@@ -30,13 +28,13 @@ ZHIPU_MODELS = [
 OPENAI_MODELS = [
     ModelCard(name="gpt-4o", description="gpt-4o", provider="openai"),
     ModelCard(name="gpt-4", description="gpt-4", provider="openai"),
-    ModelCard(name="gpt-4o-mini", description="gpt-4o-mini", provider="openai")
+    ModelCard(name="gpt-4o-mini", description="gpt-4o-mini", provider="openai"),
 ]
 
 
 MINIMAX_MODELS = [
     ModelCard(name="abab6.5s-chat", description="abab6.5s-chat", provider="minimax"),
-    ModelCard(name="speech-01-turbo", description="speech-01-turbo", provider="minimax", model_type=ModelType.TTS)
+    ModelCard(name="speech-01-turbo", description="speech-01-turbo", provider="minimax", model_type=ModelType.TTS),
 ]
 
 DOUBAO_MODELS = [
@@ -45,7 +43,7 @@ DOUBAO_MODELS = [
 
 QWEN_MODELS = [
     ModelCard(name="qwen-turbo", description="qwen-turbo", provider="qwen"),
-    ModelCard(name="qwen-vl-plus", description="qwen-vl-plus", provider="qwen", support_vision=True)
+    ModelCard(name="qwen-vl-plus", description="qwen-vl-plus", provider="qwen", support_vision=True),
 ]
 
 

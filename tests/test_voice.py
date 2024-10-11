@@ -1,9 +1,9 @@
 import unittest
 
-
-from liteai.voice import *
-from liteai.utils import set_logger
 from loguru import logger
+
+from liteai.utils import set_logger
+from liteai.voice import *
 
 
 class TestVoice(unittest.TestCase):

@@ -1,28 +1,26 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-'''
+"""
 @Time    :   2024/06/25 16:39:05
 @Author  :   ChenHao
-@Description  :   
+@Description  :
 @Contact :   jerrychen1990@gmail.com
-'''
+"""
+
 import itertools
 import json
-from typing import Any, List, Tuple
 
-from loguru import logger
 import numpy as np
-
-
-from liteai.core import ModelCard, ModelResponse, Message, ToolCall, ToolDesc, Usage
-from zhipuai import ZhipuAI
-from liteai.provider.base import BaseProvider
+from loguru import logger
 from snippets import add_callback2gen
+from zhipuai import ZhipuAI
 
-from liteai.utils import extract_tool_calls, get_text_chunk, image2base64, acc_chunks
+from liteai.core import Message, ModelCard, ModelResponse, ToolCall, ToolDesc, Usage
+from liteai.provider.base import BaseProvider
+from liteai.utils import acc_chunks, extract_tool_calls, get_text_chunk, image2base64
 
 
-def build_tool_calls(tool_calls) -> List[ToolCall]:
+def build_tool_calls(tool_calls) -> list[ToolCall]:
     # logger.debug(f"tool_calls: {tool_calls}")
     if tool_calls is None:
         return []
@@ -45,8 +43,10 @@ class ZhipuProvider(BaseProvider):
         super().__init__(api_key=api_key)
         self.client = ZhipuAI(api_key=self.api_key)
 
-    def pre_process(self, model: ModelCard, messages: List[Message], tools: List[ToolDesc], stream: bool, **kwargs) -> Tuple[List[dict], List[dict], dict]:
-        if kwargs.get("temperature") == 0.:
+    def pre_process(
+        self, model: ModelCard, messages: list[Message], tools: list[ToolDesc], stream: bool, **kwargs
+    ) -> tuple[list[dict], list[dict], dict]:
+        if kwargs.get("temperature") == 0.0:
             del kwargs["temperature"]
             kwargs["do_sample"] = False
         messages, _, kwargs = super().pre_process(model=model, messages=messages, tools=tools, stream=stream, **kwargs)
@@ -55,8 +55,7 @@ class ZhipuProvider(BaseProvider):
             # logger.debug(f"{message=}")
             if message.get("image"):
                 base64 = image2base64(message["image"])
-                message["content"] = [dict(type="text", text=message["content"]),
-                                      dict(type="image_url", image_url=dict(url=base64))]
+                message["content"] = [dict(type="text", text=message["content"]), dict(type="image_url", image_url=dict(url=base64))]
                 del message["image"]
         tools = [self.tool2zhipu_tool(tool) for tool in tools]
         return messages, tools, kwargs
@@ -70,14 +69,8 @@ class ZhipuProvider(BaseProvider):
         rs = dict(type="function", function=dict(name=tool.name, description=tool.description, parameters=parameters))
         return rs
 
-    def _inner_complete_(self, model, messages: List[dict], stream: bool, tools: List[dict], **kwargs) -> Any:
-        response = self.client.chat.completions.create(
-            model=model,
-            messages=messages,
-            stream=stream,
-            tools=tools,
-            **kwargs
-        )
+    def _inner_complete_(self, model, messages: list[dict], stream: bool, tools: list[dict], **kwargs) -> any:
+        response = self.client.chat.completions.create(model=model, messages=messages, stream=stream, tools=tools, **kwargs)
         return response
 
     def post_process(self, response, **kwargs) -> ModelResponse:
@@ -95,13 +88,9 @@ class ZhipuProvider(BaseProvider):
         gen = add_callback2gen(gen, acc_chunks)
         return ModelResponse(content=gen, tool_calls=tool_calls)
 
-    def _embedding_single_try(self, text: str, model: str, norm=True, **kwargs) -> List[float]:
+    def _embedding_single_try(self, text: str, model: str, norm=True, **kwargs) -> list[float]:
         try:
-            resp = self.client.embeddings.create(
-                model=model,
-                input=text,
-                **kwargs
-            )
+            resp = self.client.embeddings.create(model=model, input=text, **kwargs)
             embedding = resp.data[0].embedding
             if norm:
                 embedding = embedding / np.linalg.norm(embedding, 2)
