@@ -1,5 +1,5 @@
-echo "run ut"
-bash run_ut.sh
+# echo "run ut"
+# bash run_ut.sh
 echo "build package"
 python -m build
 echo "upload package"

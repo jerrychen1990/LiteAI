@@ -46,8 +46,12 @@ QWEN_MODELS = [
     ModelCard(name="qwen-vl-plus", description="qwen-vl-plus", provider="qwen", support_vision=True),
 ]
 
+DEEPSEEK_MODELS = [
+    ModelCard(name="deepseek-r1", description="deepseek-r1", provider="deepseek"),
+    ModelCard(name="deepseek-v3", description="deepseek-v3", provider="deepseek"),
+]
 
-ALL_MODELS = ZHIPU_MODELS + OPENAI_MODELS + MINIMAX_MODELS + QWEN_MODELS + DOUBAO_MODELS
+ALL_MODELS = ZHIPU_MODELS + OPENAI_MODELS + MINIMAX_MODELS + QWEN_MODELS + DOUBAO_MODELS + DEEPSEEK_MODELS
 ALL_MODEL_MAP = {model.name: model for model in ALL_MODELS}
 
 

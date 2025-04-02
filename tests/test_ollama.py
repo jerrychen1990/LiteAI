@@ -20,4 +20,4 @@ class TestOllama(BasicTestCase):
         logger.info("start test ollama job")
 
     def test_basic_llm(self):
-        super().basic_llm(model="ollama/llama3", base_url="http://36.103.167.117:11434")
+        super().basic_llm(model="ollama/glm4", base_url="http://36.103.167.117:11434/")

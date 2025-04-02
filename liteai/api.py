@@ -57,7 +57,14 @@ def chat(
         messages = [Message(**m) if isinstance(m, dict) else m for m in messages]
 
     response = provider.complete(
-        messages=messages, model=model, stream=stream, tools=tools, tool_calls=tool_calls, temperature=temperature, top_p=top_p, **kwargs
+        messages=messages,
+        model=model,
+        stream=stream,
+        tools=tools,
+        tool_calls=tool_calls,
+        temperature=temperature,
+        top_p=top_p,
+        **kwargs,
     )
     return response
 
@@ -80,7 +87,13 @@ def tts(
 
 
 @can_set_level
-def asr(voice: Voice, model: str | ModelCard, provider: str = None, api_key: str = None, **kwargs) -> str:
+def asr(
+    voice: Voice,
+    model: str | ModelCard,
+    provider: str = None,
+    api_key: str = None,
+    **kwargs,
+) -> str:
     if isinstance(model, str):
         model: ModelCard = get_modelcard(model_name=model, provider_key=provider)
     provider: BaseProvider = get_provider(model=model, api_key=api_key)
@@ -90,7 +103,13 @@ def asr(voice: Voice, model: str | ModelCard, provider: str = None, api_key: str
 
 @can_set_level
 def embedding(
-    texts: str | list[str], model: str | ModelCard, provider: str = None, api_key: str = None, norm=True, batch_size=8, **kwargs
+    texts: str | list[str],
+    model: str | ModelCard,
+    provider: str = None,
+    api_key: str = None,
+    norm=True,
+    batch_size=8,
+    **kwargs,
 ) -> list[list[float]] | list[float]:
     if isinstance(model, str):
         model: ModelCard = get_modelcard(model_name=model, provider_key=provider)

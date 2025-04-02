@@ -35,6 +35,14 @@ class TestOpenAI(BasicTestCase):
         show_response(resp)
         self.assertTrue("皮卡丘" in resp.content)
 
+    def test_deepseek_chat(self):
+        question = "作一首五言绝句"
+        model = "deepseek-v3"
+        messages = [Message(role="user", content=question)]
+        resp = chat(model=model, messages=messages, stream=True, temperature=0.0)
+        show_response(resp)
+        self.assertTrue("五言绝句" in resp.content)
+
     @unittest.skip("本地模型不一定部署")
     def test_local_model(self):
         # os.environ.pop("OPENAI_API_KEY")

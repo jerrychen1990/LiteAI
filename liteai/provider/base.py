@@ -16,7 +16,6 @@ from snippets import jdumps, multi_thread, retry
 from liteai.core import Message, ModelCard, ModelResponse, ToolCall, ToolDesc, Voice
 from liteai.utils import truncate_dict_strings
 
-
 class BaseProvider:
     key: str = None
     allow_kwargs = None
@@ -29,7 +28,7 @@ class BaseProvider:
             raise ValueError(f"api_key is required or set {self.api_key_env} in environment variables or set base_url")
 
     def pre_process(
-        self, model: ModelCard, messages: list[Message], tools: list[ToolDesc], tool_calls: list[ToolCall], stream: str, **kwargs
+        self, model: ModelCard|str, messages: list[Message], tools: list[ToolDesc], tool_calls: list[ToolCall], stream: str, **kwargs
     ) -> tuple[list[dict], list[dict], dict]:
         new_kwargs = dict()
         ignore_kwargs = dict()
