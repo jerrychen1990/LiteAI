@@ -12,6 +12,6 @@ from snippets import set_logger
 
 from liteai.config import LITEAI_ENV, LOG_HOME
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 load_dotenv()
 set_logger(LITEAI_ENV, __name__, log_dir=LOG_HOME)

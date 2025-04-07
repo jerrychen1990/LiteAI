@@ -17,6 +17,7 @@
 | [Ollama](https://ollama.com/)                                                               | ✅   | ✅       |           |           |           |         |     |     |
 | [SiliconFlow](https://docs.siliconflow.cn/reference)                                                               | ✅   | ✅       |           |           |           |         |     |     |
 | [DeepSeek](https://api-docs.deepseek.com/zh-cn/)                                                               | ✅   | ✅       |           |           |           |         |     |     |
+| [Coze](https://coze.com/docs/api/introduction)                                                               | ✅   | ✅       |           |           |           |         |     |     |
 
 
 ## Install

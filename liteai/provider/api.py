@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 from liteai.core import ModelCard
 from liteai.provider.base import BaseProvider
+from liteai.provider.coze import CozeProvider
 from liteai.provider.doubao import DoubaoProvider
 from liteai.provider.lite_llm import LiteLLMProvider
 from liteai.provider.minimax import MinimaxProvider
@@ -36,6 +37,7 @@ _ALL_PROVIDERS: list[BaseProvider] = [
     XunfeiProvider,
     SiliconFlowProvider,
     DeepSeekProvider,
+    CozeProvider,
 ]
 _PROVIDER_MAP = {p.key: p for p in _ALL_PROVIDERS}
 
@@ -62,6 +64,8 @@ def get_provider_key(model_name: str) -> str:
         provider_name = LiteLLMProvider.key
     elif "deepseek" in model_name:
         provider_name = DeepSeekProvider.key
+    elif "coze" in model_name:
+        provider_name = CozeProvider.key
     else:
         raise ValueError(f"Unsupported model: {model_name}")
     return provider_name
